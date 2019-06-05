@@ -28,12 +28,7 @@ vidID = 'V' # Identifier for all wanted videos
 vidList=[]
 
 ## Get all video files
-for path, subdirs, files in os.walk(subjDir):
-    for name in files: 
-        if vidID in name:
-            vidList.append(path+'/'+name)
-        else:
-            continue
+vidList = setDLCFunc.fileFinder(subjDir,vidID)
 
 ## Create cropping parameters for all video files
 [x1, x2, y1, y2] = setDLCFunc.getROI(vidList)

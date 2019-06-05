@@ -9,25 +9,27 @@ import os
 import random
 import numpy as np
 import cv2
-from pathlib import Path
+# from pathlib import Path
 
 def readfile(F):
     with open(F) as f:
         return f.read().splitlines()
     
-def randVidSel(vidDir,numVids,wrkDir):
-    trainFiles = [None] * numVids
-    allFiles = os.listdir(vidDir)
-    maxNum = len(allFiles)
-    print(maxNum)
-    vidInd = random.sample(range(0,maxNum),numVids)
+def randVidSel(vidList,numVids):
+    trainFiles = []
+    maxNum = len(vidList)
+    if maxNum >= numVids:
+        vidInd = random.sample(range(0,maxNum),numVids)
+    else:
+        raise ValueError("numVids should be less than "+str(maxNum))
     
     for num in vidInd:
-        vidNum = vidInd.index(num)
-        trainFiles[vidNum] = allFiles[num]
+        trainFiles.append(vidList[num])
     
-    np.savetxt(wrkDir+"/trainFiles.csv",trainFiles,delimiter=",",fmt='%s')
+    #np.savetxt(wrkDir+"/trainFiles.csv",trainFiles,delimiter=",",fmt='%s')
 
+    return trainFiles
+    
 def getROI(locVidDir,docVidDir,wrkDir,trainFcsv):
     cropParamDir=wrkDir+"/cropParameters.txt"
     train=[]

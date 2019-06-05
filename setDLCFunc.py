@@ -5,7 +5,6 @@ Created on Thu Jan 24 15:57:44 2019
 
 @author: kkrista
 """
-import os
 import random
 import numpy as np
 import cv2
@@ -36,21 +35,34 @@ def getROI(vidList):
     y1_all = []
     y2_all = []
     
+    # Initialize date comparison array
+    allDates = []
+    
+    # Cycle through each video
     for vid in vidList:
-        vidcap = cv2.VideoCapture(vid)
-        success, image = vidcap.read()
-        small = cv2.resize(image,(0,0),fx=0.5,fy=0.5)
-            
-        r = cv2.selectROI(small)
-        r = np.array(r)
-        r = 2*r
-
-        x1_all.append(str(r[0]))
-        x2_all.append(str(r[0]+r[2]))
-        y1_all.append(str(r[1]))
-        y2_all.append(str(r[1]+r[3]))
         
+        # Identify date associated with video
+        parts=vid.split('_')
+        date=parts[-3]
+        
+        # Look to see if we've already cropped this date
+        if date in allDates:
+            continue
+        else:
+            vidcap = cv2.VideoCapture(vid)
+            success, image = vidcap.read()
+            small = cv2.resize(image,(0,0),fx=0.5,fy=0.5)
+            
+            r = cv2.selectROI(small)
+            r = np.array(r)
+            r = 2*r
 
+            x1_all.append(str(r[0]))
+            x2_all.append(str(r[0]+r[2]))
+            y1_all.append(str(r[1]))
+            y2_all.append(str(r[1]+r[3]))
+            allDates.append(date)
+        
     return [x1_all, x2_all, y1_all, y2_all]
 
 def multiNet(projName,locVidDir,docVidDir):

@@ -44,6 +44,5 @@ trainFiles = setDLCFunc.randVidSel(vidList,numRandVids)
 ## Create the DLC project!
 configPath = deeplabcut.create_new_project(projName,experimenter,trainFiles,working_directory=projDir,copy_videos=False)
 
-## Get the cropping parameters for all videos
 
 

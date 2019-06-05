@@ -35,6 +35,15 @@ for path, subdirs, files in os.walk(subjDir):
         else:
             continue
 
+## Create cropping parameters for all video files
+[x1, x2, y1, y2] = setDLCFunc.getROI(vidList)
+
 ## Get randomly selected videos for training
 trainFiles = setDLCFunc.randVidSel(vidList,numRandVids)
+
+## Create the DLC project!
+configPath = deeplabcut.create_new_project(projName,experimenter,trainFiles,working_directory=projDir,copy_videos=False)
+
+## Get the cropping parameters for all videos
+
 

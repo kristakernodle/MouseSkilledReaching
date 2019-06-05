@@ -25,46 +25,19 @@ def randVidSel(vidList,numVids):
     
     for num in vidInd:
         trainFiles.append(vidList[num])
-    
-    #np.savetxt(wrkDir+"/trainFiles.csv",trainFiles,delimiter=",",fmt='%s')
 
     return trainFiles
     
-def getROI(locVidDir,docVidDir,wrkDir,trainFcsv):
-    cropParamDir=wrkDir+"/cropParameters.txt"
-    train=[]
-    g=[]
-    h=[]
-    origVids = []
-    a=[]
-    compName=[]
+def getROI(vidList):
     
-    cropParamFile=Path(cropParamDir)
-    if cropParamFile.is_file():
-        f=readfile(cropParamDir)            
-        writeIt = open(cropParamDir,'w')
-    else:
-        writeIt = open(cropParamDir,'w+')
+    # Initialize output variables
+    x1_all = []
+    x2_all = []
+    y1_all = []
+    y2_all = []
     
-    ff=readfile(wrkDir+"/trainFiles.csv")
-    
-    cc=0
-    while cc < len(ff):
-        train.append(docVidDir+ff[cc])
-        cc+=1
-        
-    os.chdir(locVidDir)
-    fullfiles = os.listdir()
-            
-    ii = 0
-    while ii < len(fullfiles):
-        docVidPath = docVidDir + fullfiles[ii]
-        locVidPath = locVidDir + fullfiles[ii]
-    
-        #if compName[ii] not in origVids:
-        #origVids.append(compName[ii])
-            
-        vidcap = cv2.VideoCapture(locVidPath)
+    for vid in vidList:
+        vidcap = cv2.VideoCapture(vid)
         success, image = vidcap.read()
         small = cv2.resize(image,(0,0),fx=0.5,fy=0.5)
             
@@ -72,21 +45,13 @@ def getROI(locVidDir,docVidDir,wrkDir,trainFcsv):
         r = np.array(r)
         r = 2*r
 
-        x1 = str(r[0])
-        x2 = str(r[0]+r[2])
-        y1 = str(r[1])
-        y2 = str(r[1]+r[3])
-
-        writeIt.write("%s\n" % docVidPath)
-        writeIt.write("%s, %s, %s, %s\n" %(x1,x2,y1,y2))
+        x1_all.append(str(r[0]))
+        x2_all.append(str(r[0]+r[2]))
+        y1_all.append(str(r[1]))
+        y2_all.append(str(r[1]+r[3]))
         
-        #else:
-            #writeIt.write("%s:\n" % docVidPath)
-            #writeIt.write("crop: %s, %s, %s, %s\n" %(x1,x2,y1,y2))
-        
-        ii += 1
 
-    writeIt.close()
+    return [x1_all, x2_all, y1_all, y2_all]
 
 def multiNet(projName,locVidDir,docVidDir):
     file=readfile('/home/kkrista/Documents/Script/dlcVar.txt')

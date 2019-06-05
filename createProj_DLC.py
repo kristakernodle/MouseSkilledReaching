@@ -23,10 +23,6 @@ subjDir = '/media/kkrista/KRISTAEHD/groomingDLC/' # Location of all animal files
 foldID = 'et' # Identifier for all wanted folders (e.g., 'R' or 'et')
 vidID = 'V' # Identifier for all wanted videos 
 
-
-## Script defined variables
-vidList=[]
-
 ## Get all video files
 vidList = setDLCFunc.fileFinder(subjDir,vidID)
 

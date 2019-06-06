@@ -56,8 +56,7 @@ def getROI(vidList):
     for vid in vidList:
         
         # Identify date associated with video
-        parts=vid.split('_')
-        date=parts[-3]
+        date=vid.split('_')[-3]
         
         # Look to see if we've already cropped this date
         if date in allDates:

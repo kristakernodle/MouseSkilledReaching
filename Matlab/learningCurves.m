@@ -4,6 +4,7 @@ directory = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/';
 
 earTags = {};
 trainingDays = {};
+filePaths = {};
 
 
 folders = dir(directory);
@@ -30,12 +31,9 @@ for ii = 1:length(earTags)
         files = dir(dayDir);
         for kk = 1:length(files)
             if files(kk).isdir == 0 && ~isempty(strfind(files(kk).name,'Scored.csv'))
-                disp(files(kk).name)
-                
-                
+                filePaths{end+1} = strcat(dayDir,files(kk).name);
             end
         end % for kk = 1:length(files=dir(dayDir))
-        
         
     end % for jj = 1:length(trainingDays)
     

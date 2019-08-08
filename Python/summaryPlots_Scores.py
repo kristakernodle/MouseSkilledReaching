@@ -64,23 +64,32 @@ for animal in allAnimals:
         groom = []
         
         for file in scoreFiles:
+            
             with open(currDayDir + '/' + file) as f:
                 scores = f.read().splitlines()
                 scores = scores[1:]
-                for trial in scores:
-                    trial = trial.split(',')
-                    if len(trial[1]) > 0:
-                        reach.append(int(trial[1]))
+                
+            for trial in scores:
+                trial = trial.split(',')
+                    
+                if len(trial[1]) > 0:
+                    reach.append(int(trial[1]))
+                    needBreak = False
+                else:
+                    needBreak = True
+                    break
                         
-                    if len(trial[2]) > 0:
-                        abMov.append(int(trial[2]))
+                if len(trial[2]) > 0:
+                    abMov.append(int(trial[2]))
                             
-#                        if len(trial[3]) > 0:
-#                            groom.append(int(trial[3]))
-#                        else:
-#                            groom = []
-
-        if len(reach) == 0 or len(abMov) == 0:
+                if len(trial[3]) > 0:
+                    groom.append(int(trial[3]))
+                
+            if needBreak is True:
+                break
+        
+        if needBreak is True:
+            print('the day has not been completely scored')
             continue
         
         print('all data for this day is collected')
@@ -106,6 +115,8 @@ for animal in allAnimals:
     print('This animal summary stats are collected')
     
     summary.sort()
+    
+    
     
     xaxis = []
     allFirstSuc = []

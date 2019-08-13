@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.7
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,17 +47,17 @@ for animal in allAnimals:
             # Skip 'Training/*' items that are not directories
             continue
 
-                # Identify where we're at in the code, in case of issues
-
         # Get all contents of the training day directory
         allFiles=os.listdir(currDayDir)
 
         # Separate out files and directories by type
         scoreFiles = [file for file in allFiles if file.endswith('Scored.csv')]
-        vidFiles = [file for file in allFiles if file.endswith('.MP4')]
+#        vidFiles = [file for file in allFiles if file.endswith('.MP4')]
         reachDirs = [file for file in allFiles if 'Reaches' in file]
         
-        if len(scoreFiles) < len(vidFiles) and len(scoreFiles) < len(reachDirs):
+        if len(scoreFiles) < len(reachDirs):
+            # This means not all videos/reachDirs have been scored, continue to 
+            # the next training day
             continue
         
         reach = []

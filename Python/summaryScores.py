@@ -62,7 +62,7 @@ for animal in allAnimals:
         if len(reachDirs) < len(vidFiles) or (len(vidFiles) == 0 and len(reachDirs) == 0) or len(scoreFiles) < len(reachDirs):
             # This means not all videos have had the pre-processing done, 
             # continue to the next training day
-            tDayData = [tday,999,999,999,999,999]
+            tDayData = [tday,999,999,999,999,999,999,999,999]
             summary.append(tDayData)
             continue
         
@@ -112,38 +112,49 @@ for animal in allAnimals:
                         groom = []         
             
         if skipDay == True:
-            tDayData = [tday,999,999,999,999,999]
+            tDayData = [tday,999,999,999,999,999,999,999,999]
             summary.append(tDayData)
             
             continue
-               
+        
+        trials = len(reach)
+        
         score1 = reach.count(1)
         score2 = reach.count(2)
         
-        firstSuc = score1 / len(reach) * 100
-        anySuc = score2 / len(reach) * 100
+        score0 = reach.count(0)
+        score6 = reach.count(6)
+        score7 = reach.count(7)
+        score8 = reach.count(8)
+        
+        numReaches = trials - score0 - score6 - score7 - score8
+        
+        firstSuc = score1 / trials * 100
+        anySuc = score2 / trials * 100
         
         if len(abMov) != 0:
             totAbMov = sum(abMov)
-            percAbMov = totAbMov / len(reach) * 100
+            percAbMov = totAbMov / trials * 100
         else:
             totAbMov = 999
             percAbMov = 999
         
         if len(groom) != 0:
             totGroom = sum(groom)
+            percGroom = totGroom / trials * 100
         else:
             totGroom = 999
+            percGroom = 999
         
-        tDayData = [tday,firstSuc,anySuc,totAbMov,percAbMov,totGroom]
+        tDayData = [tday,trials,numReaches,firstSuc,anySuc,totAbMov,percAbMov,totGroom,percGroom]
         
         summary.append(tDayData)
     
     summary.sort()
     f = open(currAnDir + 'summaryStatistics_' + animal + '.csv','w+')
-    f.write('Training Day,First Success,Any Success, Trials with Abnormal Movement,Percent Trials with Abnormal Movemovent, Trials with Grooming\n')
+    f.write('Training Day,Number of Trials,Number of Reaches,First Success,Any Success,Trials with Abnormal Movement,Percent Trials with Abnormal Movemovent,Trials with Grooming,Percent Trials with Grooming\n')
     for tDay in summary:
-        f.write('%s,%f,%f,%f,%f,%f\n' %(tDay[0],tDay[1],tDay[2],tDay[3],tDay[4],tDay[5]))
+        f.write('%s,%f,%f,%f,%f,%f,%f,%f,%f\n' %(tDay[0],tDay[1],tDay[2],tDay[3],tDay[4],tDay[5],tDay[6],tDay[7],tDay[8]))
     f.close
     
 needAbMov.sort()

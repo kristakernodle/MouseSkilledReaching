@@ -150,6 +150,16 @@ for animal in allAnimals:
         
         summary.append(tDayData)
     
+    allTrainingDays = ['T01','T02','T03','T04','T05','T06','T07','T08','T09','T10','T11','T12','T13','T14','T15','T16','T17','T18','T19','T20','T21']
+    if len(summary) < 21:
+        for item in summary:
+            for day in allTrainingDays:
+                if day in item[0]:
+                    allTrainingDays.remove(day)
+                    break
+        for day in allTrainingDays:
+            summary.append([day,999,999,999,999,999,999,999,999])
+    
     summary.sort()
     f = open(currAnDir + 'summaryStatistics_' + animal + '.csv','w+')
     f.write('Training Day,Number of Trials,Number of Reaches,First Success,Any Success,Trials with Abnormal Movement,Percent Trials with Abnormal Movemovent,Trials with Grooming,Percent Trials with Grooming\n')

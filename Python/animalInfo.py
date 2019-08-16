@@ -27,32 +27,3 @@ animals = {
         "et7076":   ['KO','left', 'box1','2'],
         "et7081":   ['WT','999','box2','s']
         }
-
-
-def pawPref(subj):
-    if subj in left:
-        pawPref = 'left'
-        nonPrefPaw = 'right'
-        return pawPref, nonPrefPaw
-    elif subj in right:
-        pawPref = 'right'
-        nonPrefPaw = 'left'
-        return pawPref, nonPrefPaw
-    else:
-        print('No paw preference found')
-        
-def boxID(subj):
-    if subj in box1:
-        return '1'
-    elif subj in box2:
-        return '2'
-    else:
-        print('No box ID found')
-        
-def genotype(subj):
-    if subj in WT:
-        return 'WT'
-    elif subj in KO:
-        return 'KO'
-    else:
-        print('Genotype not found')

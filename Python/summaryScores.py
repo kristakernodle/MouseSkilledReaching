@@ -19,7 +19,7 @@ for file in allFolders:
 allAnimals.sort()
 
 for animal in allAnimals:
-    
+       
     print(animal)
     
     summary = []
@@ -33,7 +33,7 @@ for animal in allAnimals:
     
     # Get contents of 'Training' directory
     allTrainDays=os.listdir(currAnDir)
-
+    allTrainDays.sort()
     for day in allTrainDays:
 
         tday = day.split('_')[-1]
@@ -57,9 +57,9 @@ for animal in allAnimals:
         # Separate out files and directories by type
         scoreFiles = [file for file in allFiles if file.endswith('Scored.csv')]
         vidFiles = [file for file in allFiles if file.endswith('.MP4')]
-        reachDirs = [file for file in allFiles if 'Reaches' in file]
+        reachFiles = [file for file in allFiles if file.endswith('.csv') and 'Scored' not in file]
         
-        if len(reachDirs) < len(vidFiles) or (len(vidFiles) == 0 and len(reachDirs) == 0) or len(scoreFiles) < len(reachDirs):
+        if len(reachFiles) < len(vidFiles) or (len(vidFiles) == 0 and len(reachFiles) == 0) or len(scoreFiles) < len(reachFiles):
             # This means not all videos have had the pre-processing done, 
             # continue to the next training day
             tDayData = [tday,999,999,999,999,999,999,999,999]

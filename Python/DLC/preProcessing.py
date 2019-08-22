@@ -15,66 +15,129 @@ Created on Fri Aug 16 13:08:38 2019
     # between two frames. If so, remove the offending point
 # 3. Try some filtering of the data to clean it up and make it more obvious
     
+import os
 import funcs
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import interp1d
 
-
-## For now, processing on 710 only
+### For now, processing on 710 only
 dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et710/DLC/'
 
-filename = '710_20181126/710_20181126_01_R24DeepCut_resnet50_rightPP_CenterFeb9shuffle1_1030000.csv'
+folder = '710_20181030'
 
-## Read in file
-[leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + filename)
+allFiles = os.listdir(dirDLC + folder)
+csvFiles = []
+for file in allFiles:
+    if 'Center' not in file:
+        continue
+    elif not file.endswith('.csv'):
+        continue
+    else:
+        csvFiles.append(file)
 
-distance = []
-for index in range(1,len(leftPaw)):
-    distance.append(funcs.ptDist(leftPaw[index],leftPaw[index-1]))
+for file in csvFiles:
 
-leftPaw = np.ma.array(leftPaw)
-rightPaw = np.ma.array(rightPaw)
-nose = np.ma.array(nose)
-pellet = np.ma.array(pellet)
-
-distLeftPaw_masked = np.ma.array(distance)
-
-## Mask where p-values are less than 0.60 -- This is a highly confident interval
-
-frames = list(range(1,len(leftPaw)+1))
-frames = np.ma.array(frames)
-
-
-
-
-for pval in list(funcs.frange(0.6,0.95,0.05)):
-    leftPaw_masked = np.ma.masked_where(leftPaw < pval,leftPaw)
-    distLeftPaw_masked.mask = leftPaw_masked.mask[1:,-1]
+#    if 'R22' not in file and 'R27' not in file and 'R28' not in file and 'R40' not in file:
+#        continue
     
-    fig, (ax1,ax2) = plt.subplots(2,1,sharex=True)
-    ax1.scatter(frames,leftPaw_masked[:,-1])
-    ax1.set(ylabel='p value', title='Points when ThreshP = ' + str(pval))
-    ax1.set_xlim(0, 950)
-    ax2.scatter(frames[1:],distLeftPaw_masked)
-    ax2.set(xlabel='Frame Number',ylabel='euclidean distance in pixels', title='Euclidean Distance when ThreshP = ' + str(pval))
-    ax2.set_xlim(0, 950)
+    print(file)
+    
+    distanceLeft = []
+    distanceRight = []
+    
+    # Read in file
+    [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + folder + '/' + file)
+
+    for index in range(1,len(leftPaw)):
+        distanceLeft.append(funcs.ptDist(leftPaw[index],leftPaw[index-1]))
+    for index in range(1,len(rightPaw)):
+        distanceRight.append(funcs.ptDist(rightPaw[index],rightPaw[index-1]))
+        
+    leftPaw = np.ma.array(leftPaw)
+    rightPaw = np.ma.array(rightPaw)
+    nose = np.ma.array(nose)
+    pellet = np.ma.array(pellet)
+    
+    pLeftPaw_masked = np.ma.masked_where(leftPaw[:,-1] < 0.75, leftPaw[:,2])
+    xLeftPaw_masked = np.ma.masked_where(leftPaw[:,-1]  < 0.75,leftPaw[:,0])
+    yLeftPaw_masked = np.ma.masked_where(leftPaw[:,-1] < 0.75,leftPaw[:,1])
+    
+    pRightPaw_masked = np.ma.masked_where(rightPaw[:,-1] < 0.75,rightPaw[:,2])
+    xRightPaw_masked = np.ma.masked_where(rightPaw[:,-1] < 0.75,rightPaw[:,0])
+    yRightPaw_masked = np.ma.masked_where(rightPaw[:,-1] < 0.75,rightPaw[:,1])
+    
+    dLeftRem = []
+    dRightRem = []
+    
+    for dist in distanceLeft:
+        if dist > 30:
+            dLeftRem.append(distanceLeft.index(dist))
+    for dist in distanceRight:
+        if dist > 30:
+            dRightRem.append(distanceRight.index(dist))
+            
+    distanceLeft = np.ma.array(distanceLeft)
+    distanceRight = np.ma.array(distanceRight)
+    
+    distanceLeft.mask = pLeftPaw_masked.mask[1:-1]
+    distanceRight.mask = pRightPaw_masked.mask[1:-1]
+    
+    for item in dLeftRem:
+        distanceLeft.mask[item] = True
+    for item in dRightRem:
+        distanceRight.mask[item] = True
+    
+    fps = 59.94
+    x = list(range(1,len(xLeftPaw_masked)+1)) 
+    x = [i/fps for i in x]
+    xL_masked = np.ma.array(x)
+    xR_masked = np.ma.array(x)
+    
+    xL_masked.mask = xLeftPaw_masked.mask
+    xR_masked.mask = xRightPaw_masked.mask
+    
+#    xLeftPaw_compressed = xLeftPaw_masked.compressed()
+#    xRightPaw_compressed = xRightPaw_masked.compressed()
+#    xL_compressed = xL_masked.compressed()
+#    xR_compressed = xR_masked.compressed()
+    
+#    xLnew = np.linspace(xL_compressed[0],xL_compressed[-1],num = len(x), endpoint=True)
+#    fL = interp1d(xL_compressed,xLeftPaw_compressed,kind = 'cubic')
+#    yLnew = fL(xLnew)
+#    
+#    xRnew = np.linspace(xR_compressed[0],xR_compressed[-1],num = len(x), endpoint=True)
+#    fR = interp1d(xR_compressed,xRightPaw_compressed,kind = 'cubic')
+#    yRnew = fR(xRnew)
+    
+    fig, (ax1,ax2) = plt.subplots(2,1,sharex=False)
+    
+    ax1.plot(x,xLeftPaw_masked,'o',label='Original Data')
+#    ax1.plot(xLnew,yLnew,'-',label='Cubic 1D Interpolation')
+#    ax1.axvspan(650/fps, 850/fps, facecolor='#d7f4d7', alpha=0.5)
+
+    ax2.plot(x,xRightPaw_masked,'o',label='Original Data')
+#    ax2.plot(xRnew,yRnew,'-',label='Cubic 1D Interpolation')
+#    ax2.axvspan(650/fps, 850/fps, facecolor='#d7f4d7', alpha=0.5)
     fig.tight_layout()
-    fig.savefig('/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et710/findThresholds_'+ str(pval) + '.pdf')
+    fig.savefig(dirDLC + folder + '/' + file[:-3] + 'pdf')
+    print('Next File')
     plt.close()
 
 
 
 
+  
+
+#fig, ((axLx,axLy,axLd),(axRx,axRy,axRd)) = plt.subplots(2,3,sharex='row',sharey=False)
+#axLx.scatter(x,xLeftPaw_masked)
+#axLy.scatter(x,yLeftPaw_masked)
+#axLd.scatter(x[1:],distanceLeft)
+#axRx.scatter(x,xRightPaw_masked)
+#axRy.scatter(x,yRightPaw_masked)
+#axRd.scatter(x[1:],distanceRight)
+#fig.tight_layout()
 
 
 
-#distLeftPaw_masked2 = np.ma.masked_where(distLeftPaw_masked > 40, distLeftPaw_masked)
-#
-#frames = list(range(1,len(leftPaw_masked)+1))
-#
-#plt.scatter(frames[1:],distLeftPaw_masked)
-#
-##plt.scatter(frames,leftPaw_masked[:,2])
-##plt.yticks(np.arange(0,1,step=0.05))
-#plt.show()
     

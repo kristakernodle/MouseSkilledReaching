@@ -25,8 +25,8 @@ def readDLC(F):
             
             leftPaw.append([float(item[1]),float(item[2]),float(item[3])])
             rightPaw.append([float(item[4]),float(item[5]),float(item[6])])
-            nose.append(item[7:10])
-            pellet.append(item[10:])
+            nose.append([float(item[7]),float(item[8]),float(item[9])])
+            pellet.append([float(item[10]),float(item[11]),float(item[12])])
         
         return leftPaw, rightPaw, nose, pellet
     

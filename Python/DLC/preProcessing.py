@@ -22,9 +22,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 ### For now, processing on 710 only
-dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et710/DLC/'
+dirDLC = '/Users/Krista/Desktop/et710/'
 
-folder = '710_20181030'
+folder = '710_20181107'
 
 allFiles = os.listdir(dirDLC + folder)
 csvFiles = []
@@ -38,9 +38,20 @@ for file in allFiles:
 
 for file in csvFiles:
 
-#    if 'R22' not in file and 'R27' not in file and 'R28' not in file and 'R40' not in file:
-#        continue
+    if '01_R37' not in file:
+        continue
+    oframe1 = 700
+    oframe2 = 800
     
+    frame1 = oframe1
+    frame2 = oframe2
+    frameDiff = frame2-frame1
+    
+    while frameDiff < 300:
+        frame1 = frame1 - 10
+        frame2 = frame2 + 10
+        frameDiff = frame2-frame1
+        
     print(file)
     
     distanceLeft = []
@@ -97,28 +108,28 @@ for file in csvFiles:
     xL_masked.mask = xLeftPaw_masked.mask
     xR_masked.mask = xRightPaw_masked.mask
     
-#    xLeftPaw_compressed = xLeftPaw_masked.compressed()
-#    xRightPaw_compressed = xRightPaw_masked.compressed()
-#    xL_compressed = xL_masked.compressed()
-#    xR_compressed = xR_masked.compressed()
+    xLeftPaw_compressed = xLeftPaw_masked.compressed()
+    xRightPaw_compressed = xRightPaw_masked.compressed()
+    xL_compressed = xL_masked.compressed()
+    xR_compressed = xR_masked.compressed()
     
-#    xLnew = np.linspace(xL_compressed[0],xL_compressed[-1],num = len(x), endpoint=True)
-#    fL = interp1d(xL_compressed,xLeftPaw_compressed,kind = 'cubic')
-#    yLnew = fL(xLnew)
-#    
-#    xRnew = np.linspace(xR_compressed[0],xR_compressed[-1],num = len(x), endpoint=True)
-#    fR = interp1d(xR_compressed,xRightPaw_compressed,kind = 'cubic')
-#    yRnew = fR(xRnew)
+    xLnew = np.linspace(xL_compressed[0],xL_compressed[-1],num = len(x), endpoint=True)
+    fL = interp1d(xL_compressed,xLeftPaw_compressed,kind = 'cubic')
+    yLnew = fL(xLnew)
+    
+    xRnew = np.linspace(xR_compressed[0],xR_compressed[-1],num = len(x), endpoint=True)
+    fR = interp1d(xR_compressed,xRightPaw_compressed,kind = 'cubic')
+    yRnew = fR(xRnew)
     
     fig, (ax1,ax2) = plt.subplots(2,1,sharex=False)
     
-    ax1.plot(x,xLeftPaw_masked,'o',label='Original Data')
-#    ax1.plot(xLnew,yLnew,'-',label='Cubic 1D Interpolation')
-#    ax1.axvspan(650/fps, 850/fps, facecolor='#d7f4d7', alpha=0.5)
+    ax1.plot(x[frame1:frame2],xLeftPaw_masked[frame1:frame2],'o',label='Original Data')
+    ax1.plot(xLnew[frame1:frame2],yLnew[frame1:frame2],'-',label='Cubic 1D Interpolation')
+    ax1.axvspan(oframe1/fps, oframe2/fps, facecolor='#d7f4d7', alpha=0.5)
 
-    ax2.plot(x,xRightPaw_masked,'o',label='Original Data')
-#    ax2.plot(xRnew,yRnew,'-',label='Cubic 1D Interpolation')
-#    ax2.axvspan(650/fps, 850/fps, facecolor='#d7f4d7', alpha=0.5)
+    ax2.plot(x[frame1:frame2],xRightPaw_masked[frame1:frame2],'o',label='Original Data')
+    ax2.plot(xRnew[frame1:frame2],yRnew[frame1:frame2],'-',label='Cubic 1D Interpolation')
+    ax2.axvspan(oframe1/fps, oframe2/fps, facecolor='#d7f4d7', alpha=0.5)
     fig.tight_layout()
     fig.savefig(dirDLC + folder + '/' + file[:-3] + 'pdf')
     print('Next File')

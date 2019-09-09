@@ -84,8 +84,15 @@ for animal in animals:
                 frameDiff = frame2-frame1
                 
                 while frameDiff < 200:
-                    frame1 = frame1 - 5
-                    frame2 = frame2 + 5
+                    if frame1 < 5:
+                        frame1 = 1
+                        frame1 = frame2 + 10
+                    elif frame2 > 959:
+                        frame2 = 959
+                        frame1 = frame1 -10
+                    else:
+                        frame1 = frame1 - 5
+                        frame2 = frame2 + 5
                     frameDiff = frame2-frame1
                     
                 print(file)
@@ -390,7 +397,7 @@ for animal in animals:
                 fig.suptitle(folder + ', Video: ' + reach + ' Abnormal Movement', size=10)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.88)
-                fig.savefig(dirDLC + 'DLCProcessing/' + file[:-3] + 'pdf')
+                fig.savefig(dirDLC + 'DLCProcessing/AbMov/' + file[:-3] + 'pdf')
 
                 plt.close()
 

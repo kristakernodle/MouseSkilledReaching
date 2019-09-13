@@ -15,6 +15,8 @@ Created on Mon Sep  9 10:47:35 2019
 
 import numpy as np
 import time
+from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsClassifier
 import scoringFuncs
  
 time1 = time.time()   
@@ -25,7 +27,7 @@ featureArray = 0
 featureArray = list()
 keyErrors = 0
 
-scoresheets, pathnames_direct = importDirect(directoryString)
+scoresheets, pathnames_direct = scoringFuncs.importDirect(directoryString)
 
 fileNum = len(pathnames_direct)
 fileNum = int(fileNum)
@@ -34,8 +36,8 @@ print(fileNum)
 for i in range(fileNum):
     #try:
         pathname = pathnames_direct[i]
-        features = readDLC(pathname)
-        rat,date1,date2,trialNum = getInfo(pathname)
+        features = scoringFuncs.readDLC(pathname)
+        rat,date1,date2,trialNum = scoringFuncs.getInfo(pathname)
         for i in scoresheets:
             print(i)
             print(rat)
@@ -62,33 +64,18 @@ for i in range(fileNum):
 time2 = time.time()
 print('Total runtime is: %f' % (time2 - time1))
 
-
-
-from sklearn.decomposition import PCA
+# Get euclidean features
+#####
+# ASK ANNIE, WHAT'S UP WITH FEATUREARRAY? SHOULD IT BE FEATUREARRAY.APPEND(FEATURES)? THIS IS NOT WELL DEFINED. COULD USE HELP.
+distFeatures = scoringFuncs.distFromPellet(featureArray)
 distFeatures = np.asarray(distFeatures)
 
 ln = len(distFeatures)
 
-redDimFeatures = np.empty([ln,10])
-x = distFeatures[4].transpose()
-x = np.asarray(x, dtype=float)
-pca = PCA(n_components=10)
-pca.fit(x)
-x = pca.transform(x)
-ycount = 0
-for y in distFeatures:
-    y = y.transpose()
-    y = np.asarray(y, dtype=float)
-    redDimFeatures[ycount] = pca.transform(y)[0] 
-    ycount= ycount+1
-    
-time1 = time.time()
-ln = len(featureArray)
-
-redDimFeatures = np.empty([ln,30])
+redDimFeatures = np.empty([ln,30]) # 30 dimensions of the feature space
 x = featureArray[0].transpose()
 x = np.asarray(x, dtype=float)
-pca = PCA(n_components=30)
+pca = PCA(n_components=30) # 30 dimensions of the feature space
 pca.fit(x)
 x = pca.transform(x)
 ycount = 0
@@ -101,7 +88,7 @@ for y in featureArray:
 time2 = time.time()
 print('PCA runtime is: %f' % (time2 - time1))
 
-split_sz = getSplitSize(redDimFeatures,20)
+split_sz = scoringFuncs.getSplitSize(redDimFeatures,20)
 
 ar1, ar2, ar3, ar4, ar5, ar6, ar7, ar8, ar9, ar10 = np.split(redDimFeatures,split_sz)
 print(np.shape(ar1))
@@ -118,7 +105,7 @@ temp2 =np.concatenate(l5, l6, l7,)
 temp3 = np.concatenate(l8, l9, l10)
 testLabel = np.concatenate(t1,t2,t3)
 
-from sklearn.neighbors import KNeighborsClassifier
+
 neigh = KNeighborsClassifier(n_neighbors = 3)
 time1 = time.time()
 neigh.fit(trainData, trainLabel) 

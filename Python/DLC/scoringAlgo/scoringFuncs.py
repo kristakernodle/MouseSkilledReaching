@@ -18,27 +18,25 @@ import pandas as pd
 import time
 import os
 
-def importLabels(filenames, rat):
-    time1 = time.time()
-    manualScores = pd.DataFrame()
-    for i in filenames:
-        print(i)
-        print(rat)
-        if (rat in i):
-            filenameString = i
-            cols = pd.read_csv(filenameString).columns
-            manualScores = pd.read_csv(filenameString,header=0,usecols=cols[1:])
-        else:
-            manualScores = pd.DataFrame()
-    #print('importLabels runtime: %f' % (time2 - time1))
-    
-    #Indexing in pandas:
-    #manualScores.at[3,'11/4/17']
-    #manualScores.iloc[r,c]
-    time2 = time.time()
-    return manualScores
-
-
+#def importLabels(filenames, rat):
+#    time1 = time.time()
+#    manualScores = pd.DataFrame()
+#    for i in filenames:
+#        print(i)
+#        print(rat)
+#        if (rat in i):
+#            filenameString = i
+#            cols = pd.read_csv(filenameString).columns
+#            manualScores = pd.read_csv(filenameString,header=0,usecols=cols[1:])
+#        else:
+#            manualScores = pd.DataFrame()
+#    #print('importLabels runtime: %f' % (time2 - time1))
+#    
+#    #Indexing in pandas:
+#    #manualScores.at[3,'11/4/17']
+#    #manualScores.iloc[r,c]
+#    time2 = time.time()
+#    return manualScores
 
 def getSplitSize(redDimFeatures,split_sz):
     if split_sz == 1:

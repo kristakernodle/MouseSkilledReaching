@@ -47,7 +47,7 @@ def frange(start,stop,step):
 
 def filterFunc(xn):
     
-    sos = signal.butter(1, 3,'highpass',fs=59.95,output='sos')
+    sos = signal.butter(3, 7,'highpass',fs=59.95,output='sos')
     y = signal.sosfilt(sos,xn)
     
     return y

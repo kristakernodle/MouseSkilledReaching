@@ -7,6 +7,7 @@ Created on Thu Jan 24 15:57:44 2019
 """
 
 import math
+from scipy import signal
 
 def readDLC(F):
     
@@ -43,3 +44,20 @@ def frange(start,stop,step):
         out.append(i)
         i += step
     return out
+
+def filterFunc(xn):
+    
+    sos = signal.butter(1, 3,'highpass',fs=59.95,output='sos')
+    y = signal.sosfilt(sos,xn)
+    
+    return y
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

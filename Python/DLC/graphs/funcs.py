@@ -8,6 +8,8 @@ Created on Thu Jan 24 15:57:44 2019
 
 import math
 from scipy import signal
+import numpy as np
+from scipy.interpolate import interp1d
 
 def readDLC(F):
     
@@ -47,10 +49,25 @@ def frange(start,stop,step):
 
 def filterFunc(xn):
     
-    sos = signal.butter(3, 7,'highpass',fs=59.95,output='sos')
+    sos = signal.butter(1, 5,'highpass',fs=100,output='sos')
     y = signal.sosfilt(sos,xn)
     
     return y
+
+def interpolData(x,data):
+    x_masked = np.ma.array(x)
+    x_masked.mask = data.mask
+    
+    data_comp = data.compressed()
+    x_comp = x_masked.compressed()
+    
+    xNew = np.linspace(x_comp[0],x_comp[-1],num = len(x), endpoint=True)
+    
+    fx = interp1d(x_comp,data_comp,kind = 'cubic')
+    fxNew = fx(xNew)
+    return xNew, fxNew
+
+    
     
     
     

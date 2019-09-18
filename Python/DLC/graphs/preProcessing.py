@@ -50,7 +50,7 @@ yRScale = []
 eucLScale = []
 eucRScale = []
 
-
+fps=100
 
 animals = list(frameDict.abMovFrames.keys())
 
@@ -167,9 +167,6 @@ for animal in animals:
                 for item in dRightRem:
                     distanceRight.mask[item] = True
                 
-                
-                
-                fps = 100
                 
                 ## Start working x and y coordinates separately to form smoothing functions
                 

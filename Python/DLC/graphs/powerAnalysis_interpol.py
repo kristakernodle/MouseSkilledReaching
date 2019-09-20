@@ -17,11 +17,11 @@ Created on Mon Sep 16 08:58:50 2019
 import os
 import funcs
 import frameDict
-from scipy import signal
+#from scipy import signal
 from scipy import fftpack
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.ma as ma
+#import numpy.ma as ma
 
 dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
 outDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/powerAnalysis/cubicInterpol/noFilter/Axis_0-20/'
@@ -33,7 +33,7 @@ urange = 20
 
 fig = plt.figure()
 
-
+firstPass = 0
 
 # =============================================================================
 # Beginning Abnormal Movement analysis
@@ -224,47 +224,91 @@ for animal in animals:
                 FFT_RD = fftpack.fft(xDRightPaw_inter)
                 freqs_RD = fftpack.fftfreq(len(xDRightPaw_inter))*100
                 
-                ## Begin Plotting
+                if firstPass == 0:
+                    mean_xLeftPaw = np.abs(FFT_xLeftPaw)
+                    meanF_xLeftPaw = freqs_xLeftPaw
+                    
+                    mean_yLeftPaw = np.abs(FFT_yLeftPaw)
+                    meanF_yLeftPaw = freqs_yLeftPaw
+                    
+                    mean_xRightPaw = np.abs(FFT_xRightPaw)
+                    meanF_xRightPaw = freqs_xRightPaw
+                    
+                    mean_yRightPaw = np.abs(FFT_yRightPaw)
+                    meanF_yRightPaw = freqs_yRightPaw
+                    
+                    mean_leftDist = np.abs(FFT_LD)
+                    meanF_leftDist = freqs_LD
+                    
+                    mean_rightDist = np.abs(FFT_RD)
+                    meanF_rightDist = freqs_RD
+                    firstPass = 1
+                else:
+                    mean_xLeftPaw = [(i+j)/2 for i in np.abs(FFT_xLeftPaw) for j in mean_xLeftPaw]
+                    meanF_xLeftPaw = [(i+j)/2 for i in freqs_xLeftPaw for j in meanF_xLeftPaw]
+                    
+                    mean_yLeftPaw = [(i+j)/2 for i in np.abs(FFT_yLeftPaw) for j in mean_yLeftPaw]
+                    meanF_yLeftPaw = [(i+j)/2 for i in freqs_yLeftPaw for j in meanF_yLeftPaw]
+                    
+                    mean_xRightPaw = [(i+j)/2 for i in np.abs(FFT_xRightPaw) for j in mean_xRightPaw]
+                    meanF_xRightPaw = [(i+j)/2 for i in freqs_xRightPaw for j in meanF_xRightPaw]
+                    
+                    mean_yRightPaw = [(i+j)/2 for i in np.abs(FFT_yRightPaw) for j in mean_yRightPaw]
+                    meanF_yRightPaw = [(i+j)/2 for i in freqs_yRightPaw for j in meanF_yRightPaw]
+                    
+                    mean_leftDist = [(i+j)/2 for i in np.abs(FFT_LD) for j in mean_leftDist]
+                    meanF_leftDist = [(i+j)/2 for i in freqs_LD for j in meanF_leftDist]
+                    
+                    mean_rightDist = [(i+j)/2 for i in np.abs(FFT_RD) for j in mean_rightDist]
+                    meanF_rightDist = [(i+j)/2 for i in freqs_RD for j in meanF_rightDist]
+                                
                 
-                ax1 = fig.add_subplot(321)
-                ax2 = fig.add_subplot(322)
-                ax3 = fig.add_subplot(323)
-                
-                ax4 = fig.add_subplot(324)
-                ax5 = fig.add_subplot(325)
-                ax6 = fig.add_subplot(326)
-                
-                ax1.plot(freqs_xLeftPaw,np.abs(FFT_xLeftPaw),'r')
-                ax1.set_xlim(lrange, urange)
-                ax1.set_ylim(-5, 2500)
-                ax1.set_title('Left Paw, x-values', size = 8)
-                
-                ax2.plot(freqs_yLeftPaw,np.abs(FFT_yLeftPaw),'r')
-                ax2.set_xlim(lrange, urange)
-                ax2.set_ylim(-5, 2500)
-                ax2.set_title('Left Paw, y-values', size = 8)
-                
-                ax3.plot(freqs_xRightPaw,np.abs(FFT_xRightPaw),'r')
-                ax3.set_xlim(lrange, urange)
-                ax3.set_ylim(-5, 2500)
-                ax3.set_title('Right Paw, x-values', size = 8)
-                
-                ax4.plot(freqs_yRightPaw,np.abs(FFT_yRightPaw),'r')
-                ax4.set_xlim(lrange, urange)
-                ax4.set_ylim(-5, 2500)
-                ax4.set_title('Right Paw, y-values', size = 8)
+## Begin Plotting
 
-                ax5.plot(freqs_LD,np.abs(FFT_LD),'r')
-                ax5.set_xlim(lrange, urange)
-                ax5.set_ylim(-5, 2500)
-                ax5.set_title('Left Paw ED', size = 8)
+ax1 = fig.add_subplot(321)
+ax2 = fig.add_subplot(322)
+ax3 = fig.add_subplot(323)
 
-                ax6.plot(freqs_RD,np.abs(FFT_RD),'r')
-                ax6.set_xlim(lrange, urange)
-                ax6.set_ylim(-5, 2500)
-                ax6.set_title('Right Paw ED', size = 8)
+ax4 = fig.add_subplot(324)
+ax5 = fig.add_subplot(325)
+ax6 = fig.add_subplot(326)
+
+ax1.plot(meanF_xLeftPaw,mean_xLeftPaw,'r')
+ax1.set_xlim(lrange, urange)
+ax1.set_ylim(-5, 2500)
+ax1.set_title('Left Paw, x-values', size = 8)
 
 
+ax2.plot(meanF_yLeftPaw,mean_yLeftPaw,'r')
+ax2.set_xlim(lrange, urange)
+ax2.set_ylim(-5, 2500)
+ax2.set_title('Left Paw, y-values', size = 8)
+
+ax3.plot(meanF_xRightPaw,mean_xRightPaw,'r')
+ax3.set_xlim(lrange, urange)
+ax3.set_ylim(-5, 2500)
+ax3.set_title('Right Paw, x-values', size = 8)
+ax3.set_ylabel('Amplitude (pixels)')
+
+ax4.plot(meanF_yRightPaw,mean_yRightPaw,'r')
+ax4.set_xlim(lrange, urange)
+ax4.set_ylim(-5, 2500)
+ax4.set_title('Right Paw, y-values', size = 8)
+
+ax5.plot(meanF_leftDist,mean_leftDist,'r')
+ax5.set_xlim(lrange, urange)
+ax5.set_ylim(-5, 2500)
+ax5.set_title('Left Paw ED', size = 8)
+ax5.set_xlabel('Frequency (Hz)')
+
+
+ax6.plot(meanF_rightDist,mean_rightDist,'r')
+ax6.set_xlim(lrange, urange)
+ax6.set_ylim(-5, 2500)
+ax6.set_title('Right Paw ED', size = 8)
+ax6.set_xlabel('Frequency (Hz)')
+
+firstPass = 0
 
 ## Begin searching through all files, starting with animal folders
 animals = list(frameDict.groom.keys())
@@ -450,50 +494,89 @@ for animal in animals:
                 FFT_RD = fftpack.fft(xDRightPaw_inter)
                 freqs_RD = fftpack.fftfreq(len(xDRightPaw_inter))*100
                 
-                ## Begin Plotting
+                if firstPass == 0:
+                    mean_xLeftPaw = np.abs(FFT_xLeftPaw)
+                    meanF_xLeftPaw = freqs_xLeftPaw
+                    
+                    mean_yLeftPaw = np.abs(FFT_yLeftPaw)
+                    meanF_yLeftPaw = freqs_yLeftPaw
+                    
+                    mean_xRightPaw = np.abs(FFT_xRightPaw)
+                    meanF_xRightPaw = freqs_xRightPaw
+                    
+                    mean_yRightPaw = np.abs(FFT_yRightPaw)
+                    meanF_yRightPaw = freqs_yRightPaw
+                    
+                    mean_leftDist = np.abs(FFT_LD)
+                    meanF_leftDist = freqs_LD
+                    
+                    mean_rightDist = np.abs(FFT_RD)
+                    meanF_rightDist = freqs_RD
+                    firstPass = 1
+                else:
+                    mean_xLeftPaw = [(i+j)/2 for i in np.abs(FFT_xLeftPaw) for j in mean_xLeftPaw]
+                    meanF_xLeftPaw = [(i+j)/2 for i in freqs_xLeftPaw for j in meanF_xLeftPaw]
+                    
+                    mean_yLeftPaw = [(i+j)/2 for i in np.abs(FFT_yLeftPaw) for j in mean_yLeftPaw]
+                    meanF_yLeftPaw = [(i+j)/2 for i in freqs_yLeftPaw for j in meanF_yLeftPaw]
+                    
+                    mean_xRightPaw = [(i+j)/2 for i in np.abs(FFT_xRightPaw) for j in mean_xRightPaw]
+                    meanF_xRightPaw = [(i+j)/2 for i in freqs_xRightPaw for j in meanF_xRightPaw]
+                    
+                    mean_yRightPaw = [(i+j)/2 for i in np.abs(FFT_yRightPaw) for j in mean_yRightPaw]
+                    meanF_yRightPaw = [(i+j)/2 for i in freqs_yRightPaw for j in meanF_yRightPaw]
+                    
+                    mean_leftDist = [(i+j)/2 for i in np.abs(FFT_LD) for j in mean_leftDist]
+                    meanF_leftDist = [(i+j)/2 for i in freqs_LD for j in meanF_leftDist]
+                    
+                    mean_rightDist = [(i+j)/2 for i in np.abs(FFT_RD) for j in mean_rightDist]
+                    meanF_rightDist = [(i+j)/2 for i in freqs_RD for j in meanF_rightDist]
+                                
                 
-                ax1 = fig.add_subplot(321)
-                ax2 = fig.add_subplot(322)
-                ax3 = fig.add_subplot(323)
-                
-                ax4 = fig.add_subplot(324)
-                ax5 = fig.add_subplot(325)
-                ax6 = fig.add_subplot(326)
-                
-                ax1.plot(freqs_xLeftPaw,np.abs(FFT_xLeftPaw),'b')
-                ax1.set_xlim(lrange, urange)
-                ax1.set_ylim(-5, 2500)
-                ax1.set_title('Left Paw, x-values', size = 8)
+## Begin Plotting
 
-                
-                ax2.plot(freqs_yLeftPaw,np.abs(FFT_yLeftPaw),'b')
-                ax2.set_xlim(lrange, urange)
-                ax2.set_ylim(-5, 2500)
-                ax2.set_title('Left Paw, y-values', size = 8)
-                
-                ax3.plot(freqs_xRightPaw,np.abs(FFT_xRightPaw),'b')
-                ax3.set_xlim(lrange, urange)
-                ax3.set_ylim(-5, 2500)
-                ax3.set_title('Right Paw, x-values', size = 8)
-                ax3.set_ylabel('Amplitude (pixels)')
-                
-                ax4.plot(freqs_yRightPaw,np.abs(FFT_yRightPaw),'b')
-                ax4.set_xlim(lrange, urange)
-                ax4.set_ylim(-5, 2500)
-                ax4.set_title('Right Paw, y-values', size = 8)
+ax1 = fig.add_subplot(321)
+ax2 = fig.add_subplot(322)
+ax3 = fig.add_subplot(323)
 
-                ax5.plot(freqs_LD,np.abs(FFT_LD),'b')
-                ax5.set_xlim(lrange, urange)
-                ax5.set_ylim(-5, 2500)
-                ax5.set_title('Left Paw ED', size = 8)
-                ax5.set_xlabel('Frequency (Hz)')
+ax4 = fig.add_subplot(324)
+ax5 = fig.add_subplot(325)
+ax6 = fig.add_subplot(326)
+
+ax1.plot(meanF_xLeftPaw,mean_xLeftPaw,'b')
+ax1.set_xlim(lrange, urange)
+ax1.set_ylim(-5, 2500)
+ax1.set_title('Left Paw, x-values', size = 8)
 
 
-                ax6.plot(freqs_RD,np.abs(FFT_RD),'b')
-                ax6.set_xlim(lrange, urange)
-                ax6.set_ylim(-5, 2500)
-                ax6.set_title('Right Paw ED', size = 8)
-                ax6.set_xlabel('Frequency (Hz)')
+ax2.plot(meanF_yLeftPaw,mean_yLeftPaw,'b')
+ax2.set_xlim(lrange, urange)
+ax2.set_ylim(-5, 2500)
+ax2.set_title('Left Paw, y-values', size = 8)
+
+ax3.plot(meanF_xRightPaw,mean_xRightPaw,'b')
+ax3.set_xlim(lrange, urange)
+ax3.set_ylim(-5, 2500)
+ax3.set_title('Right Paw, x-values', size = 8)
+ax3.set_ylabel('Amplitude (pixels)')
+
+ax4.plot(meanF_yRightPaw,mean_yRightPaw,'b')
+ax4.set_xlim(lrange, urange)
+ax4.set_ylim(-5, 2500)
+ax4.set_title('Right Paw, y-values', size = 8)
+
+ax5.plot(meanF_leftDist,mean_leftDist,'b')
+ax5.set_xlim(lrange, urange)
+ax5.set_ylim(-5, 2500)
+ax5.set_title('Left Paw ED', size = 8)
+ax5.set_xlabel('Frequency (Hz)')
+
+
+ax6.plot(meanF_rightDist,mean_rightDist,'b')
+ax6.set_xlim(lrange, urange)
+ax6.set_ylim(-5, 2500)
+ax6.set_title('Right Paw ED', size = 8)
+ax6.set_xlabel('Frequency (Hz)')
                 
 #fig.suptitle(folder + ', Video: ' + reach + ' Grooming', size=10)
 #fig.tight_layout()
@@ -508,10 +591,10 @@ for animal in animals:
                 
                 
       
-fig.suptitle('FFT: Abnormal Movements versus Grooming', size=10)
+fig.suptitle('Average FFT: Abnormal Movements versus Grooming', size=10)
 fig.tight_layout()
 fig.subplots_adjust(top=0.88)
-fig.savefig(outDir + 'cominbed_plot.pdf')
+fig.savefig(outDir + 'average_plot.pdf')
 
 plt.close()
                 

@@ -65,7 +65,7 @@ def interpolData(x,data):
     
     fx = interp1d(x_comp,data_comp,kind = 'cubic')
     fxNew = fx(xNew)
-    return xNew, fxNew
+    return xNew, fxNew, fx
 
     
     

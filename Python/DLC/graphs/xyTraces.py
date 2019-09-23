@@ -38,8 +38,8 @@ def init():
 # animation function.  This is called sequentially
 def animate(i):
     
-    fxNew = fx(xNew[0:i])
-    fyNew = fy(yNew[0:i])
+    fxNew = fx(xNew[:i])
+    fyNew = fy(yNew[:i])
     
     line.set_data(fxNew,fyNew)
     return line,
@@ -51,10 +51,10 @@ def animate(i):
 
 
 ## Begin searching through all files, starting with animal folders
-animals = list(frameDict.abMovFrames.keys())
+animals = list(frameDict.groom.keys())
 
 for animal in animals:
-    folders = list(frameDict.abMovFrames[animal].keys())
+    folders = list(frameDict.groom[animal].keys())
 
     ## Begin searching through animal's subdirectories, looking for DLC folders
     for folder in folders:
@@ -72,7 +72,7 @@ for animal in animals:
             else:
                 csvFiles.append(file)
         
-        reaches = list(frameDict.abMovFrames[animal][folder].keys())
+        reaches = list(frameDict.groom[animal][folder].keys())
         
         ## Begin searching through all of the reaches for the ones of interest
         for reach in reaches:
@@ -87,8 +87,8 @@ for animal in animals:
                 print('beginning analysis on: ' + file)
                 
                 ## Pull in the behavior of interest frame numbers
-                frame1 = frameDict.abMovFrames[animal][folder][reach][0]
-                frame2 = frameDict.abMovFrames[animal][folder][reach][1]
+                frame1 = frameDict.groom[animal][folder][reach][0]
+                frame2 = frameDict.groom[animal][folder][reach][1]
                 
                 ## Define lists that will be filled later
                 leftPawX = []
@@ -201,11 +201,11 @@ for animal in animals:
                 fx = xLP_f
                 fy = yLP_f
                 xNew = tsXLeftPaw_inter
-                yNew = tsYLeftPaw_inter
+                yNew = tsYRightPaw_inter
                 
                 # call the animator.  blit=True means only re-draw the parts that have changed.
                 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                                               frames=len(xNew), interval=20, blit=True)
+                                               frames=len(x)-1, interval=20, blit=True)
                 
 #                fx = xRP_f
 #                fy = yRP_f
@@ -220,7 +220,7 @@ for animal in animals:
                 # the video can be embedded in html5.  You may need to adjust this for
                 # your system: for more information, see
                 # http://matplotlib.sourceforge.net/api/animation_api.html
-                anim.save(file[:-4]+'.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
+                anim.save(outDir + 'groom/' + file[:-4]+'.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
                 
                 plt.close()
 

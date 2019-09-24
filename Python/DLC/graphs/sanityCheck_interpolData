@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 24 11:14:08 2019
+
+@author: kkrista
+"""
+
+import funcs
+
+dlcCSV = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/DLC/et717_20181130_T2/717_20181130_01_R20DeepCut_resnet50_rightPP_CenterFeb9shuffle1_1030000.csv'
+reachVid = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/Training/et717_20181130_CC2_T2/Reaches01/717_20181130_01_R20.MP4'
+
+frame1 = 800
+frame2 = 940
+
+[leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dlcCSV)
+
+leftPaw = leftPaw[frame1:frame2]
+rightPaw = rightPaw[frame1:frame2]
+nose = nose[frame1:frame2]
+pellet = pellet[frame1:frame2]
+
+
+
+
+
+
+
+

@@ -67,6 +67,43 @@ def interpolData(x,data):
     fxNew = fx(xNew)
     return xNew, fxNew, fx
 
+def maskData(data):
+    
+    # Get the distance between each point and mask outliers
+    mask = []
+    for index in range(0,len(data)):
+        if index == 0:
+            if ptDist(data[index],data[index+1]) > 50:
+                mask.append(True)
+            else:
+                mask.append(False)
+        elif index == len(data)-1:
+            if ptDist(data[index-1],data[index]) > 50:
+                mask.append(True)
+            else:
+                mask.append(False)
+        elif mask[index-1] == True and ptDist(data[index],data[index+1]) > 50:
+            mask.append(True)
+        elif ptDist(data[index-1],data[index]) > 50:
+            mask.append(True)
+        else:
+            mask.append(False) 
+    
+    maskData = np.ma.array(data)
+    
+    # Define x,y,and p values for body parts with mask based on p value
+    xData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,0])
+    yData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,1])
+    pData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,2])
+    
+    mask = [any(tup) for tup in zip(mask,pData_masked.mask)]
+    
+    
+    # Merge the two masks:
+    
+    
+
+
     
     
     

@@ -17,6 +17,7 @@ import numpy as np
 #import numpy.ma as ma
 
 dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
+vidDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
 outDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/xyTraces/'
 fps = fs = 100
 
@@ -51,10 +52,13 @@ def animate(i):
 
 
 ## Begin searching through all files, starting with animal folders
-animals = list(frameDict.groom.keys())
+animals = list(frameDict.abMovFrames.keys())
 
 for animal in animals:
-    folders = list(frameDict.groom[animal].keys())
+    if animal != 'et717':
+        continue
+    
+    folders = list(frameDict.abMovFrames[animal].keys())
 
     ## Begin searching through animal's subdirectories, looking for DLC folders
     for folder in folders:
@@ -72,23 +76,24 @@ for animal in animals:
             else:
                 csvFiles.append(file)
         
-        reaches = list(frameDict.groom[animal][folder].keys())
+        reaches = list(frameDict.abMovFrames[animal][folder].keys())
         
         ## Begin searching through all of the reaches for the ones of interest
         for reach in reaches:
-
+            if reach != '01_R20D':
+                continue
             
             # Check to see if reach is one of interest
             for file in csvFiles:
-            
+                
                 if reach not in file:
                     continue
                 
                 print('beginning analysis on: ' + file)
                 
                 ## Pull in the behavior of interest frame numbers
-                frame1 = frameDict.groom[animal][folder][reach][0]
-                frame2 = frameDict.groom[animal][folder][reach][1]
+                frame1 = frameDict.abMovFrames[animal][folder][reach][0]
+                frame2 = frameDict.abMovFrames[animal][folder][reach][1]
                 
                 ## Define lists that will be filled later
                 leftPawX = []

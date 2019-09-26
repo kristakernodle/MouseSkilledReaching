@@ -19,20 +19,20 @@ dlcCropParams = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/crop
 frame1 = 800
 frame2 = 940
 
-#vidcap = cv2.VideoCapture(reachVid)
-#vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame1-1)
-#
-#success,image = vidcap.read()
-#count = frame1
-#success = True
-#while success and count <= frame2:
-#  success,image = vidcap.read()
-#  cv2.imwrite("/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/graphs/frames/frame%d.jpg" % count, image)     # save frame as JPEG file
-#  if cv2.waitKey(10) == 27:                     # exit if Escape is hit
-#      break
-#  count += 1
-#
-#vidcap.release()
+vidcap = cv2.VideoCapture(reachVid)
+vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame1-1)
+
+success,image = vidcap.read()
+count = frame1
+success = True
+while success and count <= frame2:
+  success,image = vidcap.read()
+  cv2.imwrite("/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/graphs/frames/frame%d.jpg" % count, image)     # save frame as JPEG file
+  if cv2.waitKey(10) == 27:                     # exit if Escape is hit
+      break
+  count += 1
+
+vidcap.release()
 
 with open(dlcCropParams) as f:
     allParams = f.read().splitlines()
@@ -41,29 +41,33 @@ with open(dlcCropParams) as f:
         if date == line[0]:
             params = line[1:]
             break
-        
+#      
+[leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dlcCSV)
+
+leftPaw = leftPaw[frame1:frame2+1]
+
+xData_masked, yData_masked, pData_masked = funcs.maskData(leftPaw)
+
+x = list(range(frame1,frame2+1))
+xNew, fxNew = funcs.interpolData(x,xData_masked)
+yNew, fyNew = funcs.interpolData(x,yData_masked)
+
+index = 0
 frames = os.listdir(os.getcwd() + '/frames/')
 for image in frames:
     if '.' == image[0]:
         continue
     img = plt.imread(os.getcwd() + '/frames/' + image)
     img = img[int(params[2]):int(params[3]),int(params[0]):int(params[1]),:]
-#    frameNum = image.strip('.jpg')
-#    frameNum = int(frameNum.strip('frame'))
-    leftPaw_pt = leftPaw[0]
+    leftPaw_pt = leftPaw[index]
     fig, ax = plt.subplots()
     ax.imshow(img)
-    ax.plot(leftPaw_pt[0],int(leftPaw_pt[1])-int(params[2]),'o')
-    plt.show()
+    ax.plot(fxNew[index],fyNew[index],'o')
+    ax.plot(xData_masked[index],yData_masked[index],'*')
+    fig.savefig(os.getcwd() + '/frames/' + image)
+    plt.close()
+    index += 1
 
-
-
-[leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dlcCSV)
-
-leftPaw = leftPaw[frame1:frame2]
-rightPaw = rightPaw[frame1:frame2]
-nose = nose[frame1:frame2]
-pellet = pellet[frame1:frame2]
 
 
 

@@ -9,7 +9,7 @@ Created on Thu Jan 24 15:57:44 2019
 import math
 from scipy import signal
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy import interpolate
 
 def readDLC(F):
     
@@ -62,10 +62,16 @@ def interpolData(x,data):
     x_comp = x_masked.compressed()
     
     xNew = np.linspace(x_comp[0],x_comp[-1],num = len(x), endpoint=True)
+    yNew = interpolate.pchip_interpolate(x_comp,data_comp,x)
+#    fx = interpolate.PchipInterpolator(x_comp, data_comp, axis=0, extrapolate=None)
+#    tck = interpolate.splrep(x_comp, data_comp, s=0)
+#    yNew = interpolate.splev(xNew, tck, der=0)
+#    yDer = interpolate.splev(xNew, tck, der=1)
+#    fx = interp1d(x_comp,data_comp,kind = 'cubic')
     
-    fx = interp1d(x_comp,data_comp,kind = 'cubic')
-    fxNew = fx(xNew)
-    return xNew, fxNew, fx
+#    yNew = fx(xNew)
+#    fxNew = fx(xNew)
+    return xNew, yNew #, yDer #, fx
 
 def maskData(data):
     
@@ -91,16 +97,19 @@ def maskData(data):
     
     maskData = np.ma.array(data)
     
-    # Define x,y,and p values for body parts with mask based on p value
-    xData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,0])
-    yData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,1])
+    # Define p values for body parts with mask based on p value
+
     pData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,2])
     
     mask = [any(tup) for tup in zip(mask,pData_masked.mask)]
     
+    xData_masked = maskData[:,0]
+    yData_masked = maskData[:,1]
+    xData_masked.mask = mask
+    yData_masked.mask = mask
+    pData_masked.mask = mask
     
-    # Merge the two masks:
-    
+    return xData_masked, yData_masked, pData_masked
     
 
 

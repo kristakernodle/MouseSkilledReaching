@@ -7,12 +7,56 @@ Created on Tue Sep 24 11:14:08 2019
 """
 
 import funcs
+import cv2
+import os
+import matplotlib.pyplot as plt
 
 dlcCSV = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/DLC/et717_20181130_T2/717_20181130_01_R20DeepCut_resnet50_rightPP_CenterFeb9shuffle1_1030000.csv'
 reachVid = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/Training/et717_20181130_CC2_T2/Reaches01/717_20181130_01_R20.MP4'
+date = '20181130'
+dlcCropParams = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/cropParams/CC2_directCrops.csv'
 
 frame1 = 800
 frame2 = 940
+
+#vidcap = cv2.VideoCapture(reachVid)
+#vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame1-1)
+#
+#success,image = vidcap.read()
+#count = frame1
+#success = True
+#while success and count <= frame2:
+#  success,image = vidcap.read()
+#  cv2.imwrite("/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/graphs/frames/frame%d.jpg" % count, image)     # save frame as JPEG file
+#  if cv2.waitKey(10) == 27:                     # exit if Escape is hit
+#      break
+#  count += 1
+#
+#vidcap.release()
+
+with open(dlcCropParams) as f:
+    allParams = f.read().splitlines()
+    for line in allParams:
+        line = line.split(',')
+        if date == line[0]:
+            params = line[1:]
+            break
+        
+frames = os.listdir(os.getcwd() + '/frames/')
+for image in frames:
+    if '.' == image[0]:
+        continue
+    img = plt.imread(os.getcwd() + '/frames/' + image)
+    img = img[int(params[2]):int(params[3]),int(params[0]):int(params[1]),:]
+#    frameNum = image.strip('.jpg')
+#    frameNum = int(frameNum.strip('frame'))
+    leftPaw_pt = leftPaw[0]
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    ax.plot(leftPaw_pt[0],int(leftPaw_pt[1])-int(params[2]),'o')
+    plt.show()
+
+
 
 [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dlcCSV)
 

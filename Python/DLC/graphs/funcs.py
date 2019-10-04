@@ -62,16 +62,16 @@ def interpolData(x,data):
     x_comp = x_masked.compressed()
     
     xNew = np.linspace(x_comp[0],x_comp[-1],num = len(x), endpoint=True)
-    yNew = interpolate.pchip_interpolate(x_comp,data_comp,x)
+#    yNew = interpolate.pchip_interpolate(x_comp,data_comp,x)
 #    fx = interpolate.PchipInterpolator(x_comp, data_comp, axis=0, extrapolate=None)
 #    tck = interpolate.splrep(x_comp, data_comp, s=0)
 #    yNew = interpolate.splev(xNew, tck, der=0)
 #    yDer = interpolate.splev(xNew, tck, der=1)
-#    fx = interp1d(x_comp,data_comp,kind = 'cubic')
+    fx = interpolate.interp1d(x_comp,data_comp,kind = 'cubic')
     
-#    yNew = fx(xNew)
+    yNew = fx(xNew)
 #    fxNew = fx(xNew)
-    return xNew, yNew #, yDer #, fx
+    return xNew, yNew, fx
 
 def maskData(data):
     

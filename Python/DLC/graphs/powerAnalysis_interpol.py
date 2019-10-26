@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 #import numpy.ma as ma
 
-dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
-outDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/powerAnalysis/cubicInterpol/noFilter/Axis_0-20/'
+dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/currentDLCIter/'
+outDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/powerAnalysis/'
 fps = 100
 fs = fps
 
@@ -49,7 +49,7 @@ for animal in animals:
     ## Begin searching through animal's subdirectories, looking for DLC folders
     for folder in folders:
         
-        allFiles = os.listdir(dirDLC + animal + '/DLC/' + folder)
+        allFiles = os.listdir(dirDLC + animal + '/DLC/')
         csvFiles = []
         
         ## Check for 'Center' in filename (direct view only analysis)
@@ -62,14 +62,17 @@ for animal in animals:
             else:
                 csvFiles.append(file)
         
+
+        
         reaches = list(frameDict.abMovFrames[animal][folder].keys())
         
         ## Begin searching through all of the reaches for the ones of interest
         for reach in reaches:
 
-            
             # Check to see if reach is one of interest
             for file in csvFiles:
+                if file == '710_20181105_01_R5DeepCut_resnet50_rightPP_CenterFeb9shuffle1_200000.csv':
+                    print('pause')
             
                 if reach not in file:
                     continue
@@ -91,7 +94,7 @@ for animal in animals:
                 euclidDistRight = []
                 
                 # Read in file
-                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + animal + '/DLC/' + folder + '/' + file)
+                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + animal + '/DLC/' + '/' + file)
             
                 if frame2 > len(leftPaw):
                     frame2 = len(leftPaw)
@@ -319,7 +322,7 @@ for animal in animals:
     ## Begin searching through animal's subdirectories, looking for DLC folders
     for folder in folders:
         
-        allFiles = os.listdir(dirDLC + animal + '/DLC/' + folder)
+        allFiles = os.listdir(dirDLC + animal + '/DLC/')
         csvFiles = []
         
         ## Check for 'Center' in filename (direct view only analysis)
@@ -361,7 +364,7 @@ for animal in animals:
                 euclidDistRight = []
                 
                 # Read in file
-                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + animal + '/DLC/' + folder + '/' + file)
+                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + animal + '/DLC/' + '/' + file)
             
                 if frame2 > len(leftPaw):
                     frame2 = len(leftPaw)

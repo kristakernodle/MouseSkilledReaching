@@ -11,14 +11,23 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 
-dlcCSV = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/DLC/et717_20181130_T2/717_20181130_01_R20DeepCut_resnet50_rightPP_CenterFeb9shuffle1_1030000.csv'
-reachVid = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/et717/Training/et717_20181130_CC2_T2/Reaches01/717_20181130_01_R20.MP4'
+figWidth = 11
+figHeight = 8
+dots = 300
+
+dlcCSV = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/currentDLCIter/et717/DLC/717_20181130_01_R11DeepCut_resnet50_rightPP_CenterFeb9shuffle1_200000.csv'
+reachVid = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/currentDLCIter/et717/DLC/717_20181130_01_R11.MP4'
 date = '20181130'
 dlcCropParams = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/cropParams/CC2_directCrops.csv'
+framesFold = "/Users/kkrista/Documents/GitHub/mouseSkilledReaching/Python/DLC/graphs/frames/"
 
-frame1 = 800
-frame2 = 940
+frame1 = 790
+frame2 = 951
 
+frameFiles = os.listdir(framesFold)
+for image in frameFiles:
+    os.remove(framesFold + image)
+    
 vidcap = cv2.VideoCapture(reachVid)
 
 width=vidcap.get(3)
@@ -26,16 +35,16 @@ height=vidcap.get(4)
 
 vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame1-1)
 
-success,image = vidcap.read()
+#success,image = vidcap.read()
 count = frame1-1
+success = True
 
-while success and count <= frame2:
+while success and count < frame2:
     count += 1
     success,image = vidcap.read()
-    cv2.imwrite("/Users/kkrista/Documents/GitHub/mouseSkilledReaching/Python/DLC/graphs/frames/frame%d.jpg" % count, image,[int(cv2.IMWRITE_JPEG_QUALITY),100])     # save frame as JPEG file
+    cv2.imwrite(framesFold + "frame%d.jpg" % count, image,[int(cv2.IMWRITE_JPEG_QUALITY),95])     # save frame as JPEG file
     if cv2.waitKey(10) == 27:                     # exit if Escape is hit
         break
-  
 
 vidcap.release()
 
@@ -53,18 +62,25 @@ y1 = int(params[2])
 [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dlcCSV)
 
 leftPaw = leftPaw[frame1:frame2+1]
+for item in leftPaw:
+    index = leftPaw.index(item)
+    newItem = [item[0]+x1,item[1]+y1,item[2]]
+    leftPaw[index] = newItem
+    
 
-#xData_masked, yData_masked, pData_masked = funcs.maskData(leftPaw)
+xData_masked, yData_masked, pData_masked = funcs.maskData(leftPaw)
 
 xLeftPaw = []
 yLeftPaw = []
+pLeftPaw = []
 for item in leftPaw:
     xLeftPaw.append(item[0])
     yLeftPaw.append(item[1])
+    pLeftPaw.append(item[2])
 
-#x = list(range(frame1,frame2+1))
-#xNew, fxNew, fx = funcs.interpolData(x,xData_masked)
-#yNew, fyNew, fy = funcs.interpolData(x,yData_masked)
+x = list(range(frame1,frame1+len(xLeftPaw)))
+xNew, fxNew, fx = funcs.interpolData(x,xData_masked)
+yNew, fyNew, fy = funcs.interpolData(x,yData_masked)
 
 
 #fig, ax = plt.subplots()
@@ -75,19 +91,26 @@ for item in leftPaw:
 #plt.close()
 
 index = 0
+trail = 0
 frames = os.listdir(os.getcwd() + '/frames/')
+frames.sort()
+
 for image in frames:
     if '.' == image[0]:
         continue
+
     img = plt.imread(os.getcwd() + '/frames/' + image)
-    leftPaw_pt = leftPaw[index]
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(figWidth,figHeight),dpi=dots)
     ax.imshow(img)
-#    ax.plot(fxNew[index],fyNew[index],'o')
-#    ax.plot(xData_masked[index],yData_masked[index],'ro')
-    ax.plot(xLeftPaw[index]+x1,yLeftPaw[index]+y1,'b.')
-    fig.savefig(os.getcwd() + '/frames/' + image[:-4] + '.eps',format='eps')
+    ax.plot(xData_masked[index-trail:index+1],yData_masked[index-trail:index+1],'ro')
+    ax.plot(xLeftPaw[index-trail:index+1],yLeftPaw[index-trail:index+1],'b.')
+    ax.plot(fxNew[index-trail:index+1],fyNew[index-trail:index+1],'g*')
+            
+    fig.savefig(os.getcwd() + '/frames/' + image[:-3] + 'jpg',quality=95,optimize=True,format='jpg')
     plt.close()
+    
+    if trail < 5:
+        trail += 1
     index += 1
 
 

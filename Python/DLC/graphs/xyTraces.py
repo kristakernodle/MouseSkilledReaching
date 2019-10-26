@@ -52,13 +52,11 @@ def animate(i):
 
 
 ## Begin searching through all files, starting with animal folders
-animals = list(frameDict.abMovFrames.keys())
+animals = list(frameDict.groom.keys())
 
 for animal in animals:
-    if animal != 'et717':
-        continue
     
-    folders = list(frameDict.abMovFrames[animal].keys())
+    folders = list(frameDict.groom[animal].keys())
 
     ## Begin searching through animal's subdirectories, looking for DLC folders
     for folder in folders:
@@ -76,12 +74,10 @@ for animal in animals:
             else:
                 csvFiles.append(file)
         
-        reaches = list(frameDict.abMovFrames[animal][folder].keys())
+        reaches = list(frameDict.groom[animal][folder].keys())
         
         ## Begin searching through all of the reaches for the ones of interest
         for reach in reaches:
-            if reach != '01_R20D':
-                continue
             
             # Check to see if reach is one of interest
             for file in csvFiles:
@@ -92,8 +88,8 @@ for animal in animals:
                 print('beginning analysis on: ' + file)
                 
                 ## Pull in the behavior of interest frame numbers
-                frame1 = frameDict.abMovFrames[animal][folder][reach][0]
-                frame2 = frameDict.abMovFrames[animal][folder][reach][1]
+                frame1 = frameDict.groom[animal][folder][reach][0]
+                frame2 = frameDict.groom[animal][folder][reach][1]
                 
                 ## Define lists that will be filled later
                 leftPawX = []
@@ -171,16 +167,30 @@ for animal in animals:
                 distanceRight = np.ma.array(distanceRight)
                 distanceNose = np.ma.array(distanceNose)
                 
-                distanceLeft.mask = pLeftPaw_masked.mask[1:-1]
-                distanceRight.mask = pRightPaw_masked.mask[1:-1]
+                try: 
+                    distanceLeft.mask = pLeftPaw_masked.mask[1:-1]
+                    distanceRight.mask = pRightPaw_masked.mask[1:-1]
+                except:
+                    maskL = np.zeros(len(distanceLeft))
+                    maskR = np.zeros(len(distanceRight))
+                    print('no mask')
                 
                 for item in dNoseRem:
                     euclidDistRight_masked.mask[item] = True
                     euclidDistLeft_masked.mask[item] = True
-                for item in dLeftRem:
-                    distanceLeft.mask[item] = True
-                for item in dRightRem:
-                    distanceRight.mask[item] = True
+                
+                try:
+                    for item in dLeftRem:
+                        distanceLeft.mask[item] = True
+                    for item in dRightRem:
+                        distanceRight.mask[item] = True
+                except:
+                    for item in dLeftRem:
+                        maskL[item] = True
+                    for item in dRightRem:
+                        maskR[item] = True
+                    distanceLeft.mask = maskL
+                    distanceRight.mask = maskR
                 
                 ## Begin creating interpolated datasets using function
                 x = list(range(frame1,frame2))
@@ -200,6 +210,7 @@ for animal in animals:
                 
                 # First set up the figure, the axis, and the plot element we want to animate
                 fig = plt.figure()
+
                 ax = plt.axes(xlim=(200,500), ylim=(0,900))
                 line, = ax.plot([], [], lw=2)
                 
@@ -210,7 +221,7 @@ for animal in animals:
                 
                 # call the animator.  blit=True means only re-draw the parts that have changed.
                 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                                               frames=len(x)-1, interval=20, blit=True)
+                                               frames=len(x), interval=20, blit=True)
                 
 #                fx = xRP_f
 #                fy = yRP_f
@@ -225,7 +236,7 @@ for animal in animals:
                 # the video can be embedded in html5.  You may need to adjust this for
                 # your system: for more information, see
                 # http://matplotlib.sourceforge.net/api/animation_api.html
-                anim.save(outDir + 'groom/' + file[:-4]+'.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
+                anim.save(outDir+'groom/'+file[:-4]+'.mp4',fps=15,dpi=300,extra_args=['-vcodec', 'libx264'])
                 
                 plt.close()
 

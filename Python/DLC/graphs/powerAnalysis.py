@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 
-dirDLC = 'X:/Neuro-Leventhal/data/mouseSkilledReaching/'
+dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
 fps = 59.55
 fs = 100
 
@@ -136,44 +136,44 @@ for animal in animals:
                 
                 ax1.plot(ma.MaskedArray.compressed(xLeftPaw_masked[oframe1:oframe2+1]),'o')
                 xLeftPaw_filtered = ma.MaskedArray.compressed(xLeftPaw_masked[oframe1:oframe2+1])
-                xLeftPaw_filtered = funcs.filterFunc(xLeftPaw_filtered)
+#                xLeftPaw_filtered = funcs.filterFunc(xLeftPaw_filtered)
                 ax1.plot(xLeftPaw_filtered,'-')
                 ax1.set_title('Left Paw, x-values', size = 8)
                 
                 ax2.plot(ma.MaskedArray.compressed(yLeftPaw_masked[oframe1:oframe2+1]),'o')
                 yLeftPaw_filtered = ma.MaskedArray.compressed(yLeftPaw_masked[oframe1:oframe2+1])
-                yLeftPaw_filtered = funcs.filterFunc(yLeftPaw_filtered)
+#                yLeftPaw_filtered = funcs.filterFunc(yLeftPaw_filtered)
                 ax2.plot(yLeftPaw_filtered,'-')
                 ax2.set_title('Left Paw, y-values', size = 8)
                 
                 ax3.plot(ma.MaskedArray.compressed(xRightPaw_masked[oframe1:oframe2+1]),'o')
                 xRightPaw_filtered = ma.MaskedArray.compressed(xRightPaw_masked[oframe1:oframe2+1])
-                xRightPaw_filtered = funcs.filterFunc(xRightPaw_filtered)
+#                xRightPaw_filtered = funcs.filterFunc(xRightPaw_filtered)
                 ax3.plot(xRightPaw_filtered,'-')
                 ax3.set_title('Right Paw, x-values', size = 8)
                 
                 ax4.plot(ma.MaskedArray.compressed(yRightPaw_masked[oframe1:oframe2+1]),'o')
                 yRightPaw_filtered =  ma.MaskedArray.compressed(yRightPaw_masked[oframe1:oframe2+1])
-                yRightPaw_filtered = funcs.filterFunc(yRightPaw_filtered)
+#                yRightPaw_filtered = funcs.filterFunc(yRightPaw_filtered)
                 ax4.plot(yRightPaw_filtered,'-')
                 ax4.set_title('Right Paw, y-values', size = 8)
                 
                 ax5.plot(ma.MaskedArray.compressed(distanceLeft[oframe1:oframe2+1]),'o')
                 dL_filtered =  ma.MaskedArray.compressed(distanceLeft[oframe1:oframe2+1])
-                dL_filtere = funcs.filterFunc(dL_filtered)
+#                dL_filtere = funcs.filterFunc(dL_filtered)
                 ax5.plot(dL_filtered,'-')
                 ax5.set_title('Left Paw ED', size = 8)
                 
                 ax6.plot(ma.MaskedArray.compressed(distanceRight[oframe1:oframe2+1]),'o')
                 dR_filtered =  ma.MaskedArray.compressed(distanceRight[oframe1:oframe2+1])
-                dR_filtered = funcs.filterFunc(dR_filtered)
+#                dR_filtered = funcs.filterFunc(dR_filtered)
                 ax6.plot(dR_filtered,'-')
                 ax6.set_title('Right Paw ED', size = 8)
                 
                 fig.suptitle(folder + ', Video: ' + reach + ' Abnormal Movement', size=10)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.88)
-                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/highPass/abMov/filtCheck/' + file[:-3] + 'pdf')
+                fig.savefig(dirDLC + 'DLCProcessing/DLCFigs/abMov/' + file[:-3] + 'pdf')
                 plt.close()
                 
                 xLP_freq, xLP_pS = signal.periodogram(xLeftPaw_filtered,fs)
@@ -214,7 +214,7 @@ for animal in animals:
                 fig.suptitle(folder + ', Video: ' + reach + ' Abnormal Movement', size=10)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.88)
-                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/highPass/abMov/' + file[:-3] + 'pdf')
+                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/rawData/noFilter/abMov/' + file[:-3] + 'pdf')
                 
                 plt.close()
                 
@@ -339,44 +339,44 @@ for animal in animals:
                 
                 ax1.plot(ma.MaskedArray.compressed(xLeftPaw_masked[oframe1:oframe2+1]),'o')
                 xLeftPaw_filtered = ma.MaskedArray.compressed(xLeftPaw_masked[oframe1:oframe2+1])
-                xLeftPaw_filtered = funcs.filterFunc(xLeftPaw_filtered)
+#                xLeftPaw_filtered = funcs.filterFunc(xLeftPaw_filtered)
                 ax1.plot(xLeftPaw_filtered,'-')
                 ax1.set_title('Left Paw, x-values', size = 8)
                 
                 ax2.plot(ma.MaskedArray.compressed(yLeftPaw_masked[oframe1:oframe2+1]),'o')
                 yLeftPaw_filtered = ma.MaskedArray.compressed(yLeftPaw_masked[oframe1:oframe2+1])
-                yLeftPaw_filtered = funcs.filterFunc(yLeftPaw_filtered)
+#                yLeftPaw_filtered = funcs.filterFunc(yLeftPaw_filtered)
                 ax2.plot(yLeftPaw_filtered,'-')
                 ax2.set_title('Left Paw, y-values', size = 8)
                 
                 ax3.plot(ma.MaskedArray.compressed(xRightPaw_masked[oframe1:oframe2+1]),'o')
                 xRightPaw_filtered = ma.MaskedArray.compressed(xRightPaw_masked[oframe1:oframe2+1])
-                xRightPaw_filtered = funcs.filterFunc(xRightPaw_filtered)
+#                xRightPaw_filtered = funcs.filterFunc(xRightPaw_filtered)
                 ax3.plot(xRightPaw_filtered,'-')
                 ax3.set_title('Right Paw, x-values', size = 8)
                 
                 ax4.plot(ma.MaskedArray.compressed(yRightPaw_masked[oframe1:oframe2+1]),'o')
                 yRightPaw_filtered =  ma.MaskedArray.compressed(yRightPaw_masked[oframe1:oframe2+1])
-                yRightPaw_filtered = funcs.filterFunc(yRightPaw_filtered)
+#                yRightPaw_filtered = funcs.filterFunc(yRightPaw_filtered)
                 ax4.plot(yRightPaw_filtered,'-')
                 ax4.set_title('Right Paw, y-values', size = 8)
                 
                 ax5.plot(ma.MaskedArray.compressed(distanceLeft[oframe1:oframe2+1]),'o')
                 dL_filtered =  ma.MaskedArray.compressed(distanceLeft[oframe1:oframe2+1])
-                dL_filtere = funcs.filterFunc(dL_filtered)
+#                dL_filtere = funcs.filterFunc(dL_filtered)
                 ax5.plot(dL_filtered,'-')
                 ax5.set_title('Left Paw ED', size = 8)
                 
                 ax6.plot(ma.MaskedArray.compressed(distanceRight[oframe1:oframe2+1]),'o')
                 dR_filtered =  ma.MaskedArray.compressed(distanceRight[oframe1:oframe2+1])
-                dR_filtered = funcs.filterFunc(dR_filtered)
+#                dR_filtered = funcs.filterFunc(dR_filtered)
                 ax6.plot(dR_filtered,'-')
                 ax6.set_title('Right Paw ED', size = 8)
                 
                 fig.suptitle(folder + ', Video: ' + reach + ' Grooming', size=10)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.88)
-                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/highPass/groom/filtCheck/' + file[:-3] + 'pdf')
+                fig.savefig(dirDLC + 'DLCProcessing/DLCFigs/groom/' + file[:-3] + 'pdf')
                 plt.close()
                 
                 xLP_freq, xLP_pS = signal.periodogram(xLeftPaw_filtered,fs)
@@ -417,7 +417,7 @@ for animal in animals:
                 fig.suptitle(folder + ', Video: ' + reach + ' Grooming', size=10)
                 fig.tight_layout()
                 fig.subplots_adjust(top=0.88)
-                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/highPass/groom/' + file[:-3] + 'pdf')
+                fig.savefig(dirDLC + 'DLCProcessing/powerAnalysis/rawData/noFilter/groom/' + file[:-3] + 'pdf')
                 
                 plt.close()
                 

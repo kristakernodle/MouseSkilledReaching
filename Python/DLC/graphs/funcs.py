@@ -71,7 +71,7 @@ def interpolData(x,data):
     
     yNew = fx(xNew)
 #    fxNew = fx(xNew)
-    return xNew, yNew, fx
+    return xNew, yNew
 
 def maskData(data):
     
@@ -101,7 +101,10 @@ def maskData(data):
 
     pData_masked = np.ma.masked_where(maskData[:,-1] < 0.75, maskData[:,2])
     
-    mask = [any(tup) for tup in zip(mask,pData_masked.mask)]
+    try:
+        mask = [any(tup) for tup in zip(mask,pData_masked.mask)]
+    except:
+        mask = mask
     
     xData_masked = maskData[:,0]
     yData_masked = maskData[:,1]

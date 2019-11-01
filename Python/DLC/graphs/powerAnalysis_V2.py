@@ -12,15 +12,15 @@ Created on Tue Oct 15 09:14:28 2019
 
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import fftpack
 
 import funcs
+import plots
 import frameDict
 frameDict = frameDict.frameDict
 
 dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/currentDLCIter/'
-outDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/powerAnalysis/'
+outDir = '/Users/kkrista/Desktop/'
 
 view = 'Center'
 
@@ -31,6 +31,12 @@ firstPass = 0
 
 rows = 4
 cols = 4
+
+plotting = False
+
+xPixRange = []
+yPixRange = []
+EDPixRange = []
 
 fftData = {}
  
@@ -57,10 +63,7 @@ for beh in behaviors:
     
     # Start looping through the animals
     for mouse in animals:
-        
-        if mouse != 'et717':
-            continue
-        
+
         fftData[beh][mouse] = {}
         
         # Get all relevant dates for this mouse
@@ -68,10 +71,7 @@ for beh in behaviors:
         
         # Start looping through relevant dates
         for day in allDates:
-            
-            if day != 'et717_20181130_T2' and day != 'et717_20181217_T13':
-                continue
-            
+
             fftData[beh][mouse][day] = {}
             
             # Get all relevant reaches
@@ -82,9 +82,6 @@ for beh in behaviors:
             
             # Start processing one reach at a time
             for reach in reaches:
-                
-                if reach != '01_R11D' and reach != '02_R31D':
-                    continue
                 
                 fftData[beh][mouse][day][reach] = {}
                 
@@ -265,34 +262,52 @@ for beh in behaviors:
                 interEDLeft = list(zip(*interLeftPaw))
                 interEDRight = [list(a) for a in interEDRight]
                     
-                ## Begin Plotting
-                fig = plt.figure()
-                ax1 = fig.add_subplot(rows,cols,1)
-                ax2 = fig.add_subplot(rows,cols,2)
-                ax3 = fig.add_subplot(rows,cols,3)
-                ax4 = fig.add_subplot(rows,cols,4)
-                
                 time = np.linspace(frame1,frame2,len(leftPaw),endpoint=True)
                 time = [frame/100 for frame in time]
                 
-                ## Left Paw (first row, all columns)
+                if plotting == False:
+                    
+                    xPixRange.append(max(interLeftPaw[0])-min(interLeftPaw[0]))
+                    yPixRange.append(max(interLeftPaw[1])-min(interLeftPaw[1]))
+                    EDPixRange.append(max(ED_Left)-min(ED_Left))
                 
-                # First Column = x,y traces
-                ax1.plot(interLeftPaw[0],interLeftPaw[1],'k')
-                ax1.set_title('Trace of Paw over Time', size = 8)
-                # Second Column = x trace over time
-                ax2.plot(time,interLeftPaw[0],'b')
-                ax2.set_title('Horizontal Movement (x-values)', size = 8)
-                # Third Column = y trace over time
-                ax3.plot(time,interLeftPaw[1],'g')
-                ax3.set_title('Vertical Movement (y-values)', size = 8)
-                # Fourth Column = Spectral analysis for animal
-                ax4.plot(np.abs(leftPaw_fft[:N // 2]))
-                ax4.set_xlim(lrange, urange)
-                ax4.set_ylim(-5, 2500)
-                ax4.set_title('Spectrogram', size = 8)
+                    xPixRange.append(max(interRightPaw[0])-min(interRightPaw[0]))
+                    yPixRange.append(max(interRightPaw[1])-min(interRightPaw[1]))
+                    EDPixRange.append(max(ED_Right)-min(ED_Right))
                 
-                plt.show()
+                else:
+                    filename = plots.plotFilename(csvFile,beh)
+                    title = plots.plotTitle(mouse,day,reach,beh)
+                    
+                    plots.plotPixels(outDir,filename,title,time, interLeftPaw, interRightPaw, ED_Left, ED_Right, leftPaw_fft)
+                
+                ## Begin Plotting
+#                fig = plt.figure()
+#                ax1 = fig.add_subplot(rows,cols,1)
+#                ax2 = fig.add_subplot(rows,cols,2)
+#                ax3 = fig.add_subplot(rows,cols,3)
+#                ax4 = fig.add_subplot(rows,cols,4)
+#                
+
+#                
+#                ## Left Paw (first row, all columns)
+#                
+#                # First Column = x,y traces
+#                ax1.plot(interLeftPaw[0],interLeftPaw[1],'k')
+#                ax1.set_title('Trace of Paw over Time', size = 8)
+#                # Second Column = x trace over time
+#                ax2.plot(time,interLeftPaw[0],'b')
+#                ax2.set_title('Horizontal Movement (x-values)', size = 8)
+#                # Third Column = y trace over time
+#                ax3.plot(time,interLeftPaw[1],'g')
+#                ax3.set_title('Vertical Movement (y-values)', size = 8)
+#                # Fourth Column = Spectral analysis for animal
+#                ax4.plot(np.abs(leftPaw_fft[:N // 2]))
+#                ax4.set_xlim(lrange, urange)
+#                ax4.set_ylim(-5, 2500)
+#                ax4.set_title('Spectrogram', size = 8)
+#                
+#                plt.show()
                 
 #                ax1.plot(np.abs(leftPaw_fft[:N // 2]))
 #                ax1.set_xlim(lrange, urange)
@@ -315,42 +330,51 @@ for beh in behaviors:
 #                fig.savefig(outDir + beh + '_' + day + '_' + reach + '.pdf')
 #
 #                plt.close()
-                
-    ## Begin Plotting AVERAGES
-    fig = plt.figure()
-    
-    ax1 = fig.add_subplot(rows,cols,1)
-    ax2 = fig.add_subplot(rows,cols,2)
-    ax3 = fig.add_subplot(rows,cols,3)
-    
-    ax1.plot(mean_leftPaw_freq,mean_leftPaw_fft)
-    ax1.set_xlim(lrange, urange)
-    ax1.set_ylim(-5, 2500)
-    ax1.set_ylabel('Power')
-    ax1.set_title('Left Paw', size = 8)
-    ax2.plot(mean_rightPaw_freq,mean_rightPaw_fft)
-    ax2.set_xlim(lrange, urange)
-    ax2.set_ylim(-5, 2500)
-    ax2.set_ylabel('Power')
-    ax2.set_title('Right Paw', size = 8)
-    ax3.plot(mean_nose_freq,mean_nose_fft)
-    ax3.set_xlim(lrange, urange)
-    ax3.set_ylim(-5, 2500)
-    ax3.set_title('Nose', size = 8)
-    ax3.set_xlabel('Frequency (Hz)')
-    ax3.set_ylabel('Power')
-    
-    if beh == 'abMovFrames':
-        desc = 'Abnormal Movements'
-    else:
-        desc = 'Grooming'
-    
-    fig.suptitle('Mean Power Analysis During '+ desc, size=10)
-    fig.tight_layout()
-    fig.subplots_adjust(top=0.88)
-    fig.savefig(outDir + beh + '_mean.pdf')
-    
-    plt.close()
+#                
+
+if plotting == False:
+    yRange = []
+    yRange.append(max(xPixRange))
+    yRange.append(max(yPixRange))
+    yRange.append(max(EDPixRange))
+    yRange = np.ceil(max(yRange))
+
+
+#    ## Begin Plotting AVERAGES
+#    fig = plt.figure()
+#    
+#    ax1 = fig.add_subplot(rows,cols,1)
+#    ax2 = fig.add_subplot(rows,cols,2)
+#    ax3 = fig.add_subplot(rows,cols,3)
+#    
+#    ax1.plot(mean_leftPaw_freq,mean_leftPaw_fft)
+#    ax1.set_xlim(lrange, urange)
+#    ax1.set_ylim(-5, 2500)
+#    ax1.set_ylabel('Power')
+#    ax1.set_title('Left Paw', size = 8)
+#    ax2.plot(mean_rightPaw_freq,mean_rightPaw_fft)
+#    ax2.set_xlim(lrange, urange)
+#    ax2.set_ylim(-5, 2500)
+#    ax2.set_ylabel('Power')
+#    ax2.set_title('Right Paw', size = 8)
+#    ax3.plot(mean_nose_freq,mean_nose_fft)
+#    ax3.set_xlim(lrange, urange)
+#    ax3.set_ylim(-5, 2500)
+#    ax3.set_title('Nose', size = 8)
+#    ax3.set_xlabel('Frequency (Hz)')
+#    ax3.set_ylabel('Power')
+#    
+#    if beh == 'abMovFrames':
+#        desc = 'Abnormal Movements'
+#    else:
+#        desc = 'Grooming'
+#    
+#    fig.suptitle('Mean Power Analysis During '+ desc, size=10)
+#    fig.tight_layout()
+#    fig.subplots_adjust(top=0.88)
+#    fig.savefig(outDir + beh + '_mean.pdf')
+#    
+#    plt.close()
         
                     
                 

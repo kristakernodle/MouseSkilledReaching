@@ -79,4 +79,43 @@ def plotPixels(outDir,filename,title,time, interLeftPaw, interRightPaw, ED_Left,
     fig.savefig(outDir+filename+'_timeTraces.pdf')
     
     plt.close()
+    
+
+
+#    ## Begin Plotting AVERAGES
+#    fig = plt.figure()
+#    
+#    ax1 = fig.add_subplot(rows,cols,1)
+#    ax2 = fig.add_subplot(rows,cols,2)
+#    ax3 = fig.add_subplot(rows,cols,3)
+#    
+#    ax1.plot(mean_leftPaw_freq,mean_leftPaw_fft)
+#    ax1.set_xlim(lrange, urange)
+#    ax1.set_ylim(-5, 2500)
+#    ax1.set_ylabel('Power')
+#    ax1.set_title('Left Paw', size = 8)
+#    ax2.plot(mean_rightPaw_freq,mean_rightPaw_fft)
+#    ax2.set_xlim(lrange, urange)
+#    ax2.set_ylim(-5, 2500)
+#    ax2.set_ylabel('Power')
+#    ax2.set_title('Right Paw', size = 8)
+#    ax3.plot(mean_nose_freq,mean_nose_fft)
+#    ax3.set_xlim(lrange, urange)
+#    ax3.set_ylim(-5, 2500)
+#    ax3.set_title('Nose', size = 8)
+#    ax3.set_xlabel('Frequency (Hz)')
+#    ax3.set_ylabel('Power')
+#    
+#    if beh == 'abMovFrames':
+#        desc = 'Abnormal Movements'
+#    else:
+#        desc = 'Grooming'
+#    
+#    fig.suptitle('Mean Power Analysis During '+ desc, size=10)
+#    fig.tight_layout()
+#    fig.subplots_adjust(top=0.88)
+#    fig.savefig(outDir + beh + '_mean.pdf')
+#    
+#    plt.close()
+        
 

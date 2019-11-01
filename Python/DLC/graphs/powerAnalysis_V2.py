@@ -23,16 +23,11 @@ dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessi
 outDir = '/Users/kkrista/Desktop/'
 
 view = 'Center'
+plotting = False
+averages = False
 
 fs = 100
-lrange = 0
-urange = 15
 firstPass = 0
-
-rows = 4
-cols = 4
-
-plotting = False
 
 xPixRange = []
 yPixRange = []
@@ -49,14 +44,15 @@ for item in behaviors:
 ## Start looping through the keys in frameDict (abMovFrames and groom)
 for beh in behaviors:
     
-    mean_leftPaw_freq = []
-    mean_leftPaw_fft = []
-    mean_rightPaw_freq = []
-    mean_rightPaw_fft = []
-    mean_nose_freq = []
-    mean_nose_fft = []
-    mean_EDLeft_fft = []
-    mean_EDRight_fft = []
+    if averages == True:
+        mean_leftPaw_freq = []
+        mean_leftPaw_fft = []
+        mean_rightPaw_freq = []
+        mean_rightPaw_fft = []
+        mean_nose_freq = []
+        mean_nose_fft = []
+        mean_EDLeft_fft = []
+        mean_EDRight_fft = []
     
     # Get the animals for this key
     animals = list(frameDict[beh].keys())
@@ -100,7 +96,7 @@ for beh in behaviors:
                         break
                     
                 # Read in file
-                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + mouse + '/DLC/' + file)
+                [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + mouse + '/DLC/' + csvFile)
                 
                 # Get the start and stop frames for this reach
                 frame1 = frameDict[beh][mouse][day][reach][0]
@@ -115,6 +111,7 @@ for beh in behaviors:
                 nose = nose[frame1:frame2]
                     
                 print('beginning analysis on: ' + day + ', reach: ' + reach)
+                
 # =============================================================================
 #                 File and information is set up for beginning analysis
 # =============================================================================
@@ -165,6 +162,9 @@ for beh in behaviors:
                     print('This data is missing something')
                     continue
                 
+                
+                
+                
                 # Perform FFT
                 leftPaw_fft = fftpack.fft2(interLeftPaw)
                 
@@ -183,199 +183,106 @@ for beh in behaviors:
                 EDLeft_freq = fftpack.fftfreq(N,d=0.01)
                 EDRight_freq = fftpack.fftfreq(N,d=0.01)
                         
-                ## Save values into dictionary for later mean calculations
-                fftData[beh][mouse][day][reach]['leftPaw_freq'] = np.abs(leftPaw_freq[:N // 2])
-                fftData[beh][mouse][day][reach]['leftPaw_fft'] = np.abs(leftPaw_fft[:N // 2])
-                fftData[beh][mouse][day][reach]['rightPaw_freq'] = np.abs(rightPaw_freq[:N // 2])
-                fftData[beh][mouse][day][reach]['rightPaw_fft'] = np.abs(rightPaw_fft[:N // 2])
-                fftData[beh][mouse][day][reach]['nose_freq'] = np.abs(nose_freq[:N // 2])
-                fftData[beh][mouse][day][reach]['nose_fft'] = np.abs(nose_fft[:N // 2])
-                fftData[beh][mouse][day][reach]['EDLeft_fft'] = np.abs(EDLeft_fft[:N // 2])
-                fftData[beh][mouse][day][reach]['EDRight_fft'] = np.abs(EDRight_fft[:N // 2])
-                
-                ## Save into the mean
-                if firstPass == 0:
-                    mean_leftPaw_freq = np.abs(leftPaw_freq[:N // 2])
-                    mean_leftPaw_fft = np.abs(leftPaw_fft[:N // 2])
-                    mean_rightPaw_freq = np.abs(rightPaw_freq[:N // 2])
-                    mean_rightPaw_fft = np.abs(rightPaw_fft[:N // 2])
-                    mean_nose_freq = np.abs(nose_freq[:N // 2])
-                    mean_nose_fft = np.abs(nose_fft[:N // 2])
-                    mean_EDLeft_fft = np.abs(EDLeft_fft[:N // 2])
-                    mean_EDRight_fft = np.abs(EDRight_fft[:N // 2])
-                    mean_EDLeft_freq = np.abs(EDLeft_freq[:N // 2])
-                    mean_EDRight_freq = np.abs(EDRight_freq[:N // 2])
-                else:
-                    
-                    for freq in np.abs(leftPaw_freq[:N // 2]):
-                        try:
-                            index = mean_leftPaw_freq[freq]
-                            mean_leftPaw_fft[index] = (mean_leftPaw_fft[index] + freq)/2
-                        except:
-                            mean_leftPaw_fft.append(np.abs(leftPaw_freq.index(freq)))
-                            mean_leftPaw_freq.append(freq)
- 
-                    for freq in np.abs(rightPaw_freq[:N // 2]):
-                        try:
-                            index = mean_rightPaw_freq[freq]
-                            mean_rightPaw_fft[index] = (mean_rightPaw_fft[index] + freq)/2
-                        except:
-                            mean_rightPaw_fft.append(np.abs(rightPaw_freq.index(freq)))
-                            mean_rightPaw_freq.append(freq)
-                            
-                    for freq in np.abs(nose_freq[:N // 2]):
-                        try:
-                            index = mean_nose_freq[freq]
-                            mean_nose_fft[index] = (mean_nose_fft[index] + freq)/2
-                        except:
-                            mean_nose_fft.append(np.abs(nose_freq.index(freq)))
-                            mean_nose_freq.append(freq)
-                    
-                    for freq in np.abs(EDLeft_freq[:N // 2]):
-                        try:
-                            index = mean_EDLeft_freq[freq]
-                            mean_EDLeft_fft[index] = (mean_EDLeft_fft[index] + freq)/2
-                        except:
-                            mean_EDLeft_fft.append(np.abs(EDLeft_freq.index(freq)))
-                            mean_EDLeft_freq.append(freq)
-                            
-                    for freq in np.abs(EDRight_freq[:N // 2]):
-                        try:
-                            index = mean_EDRight_freq[freq]
-                            mean_EDRight_fft[index] = (mean_EDRight_fft[index] + freq)/2
-                        except:
-                            mean_EDRight_fft.append(np.abs(EDRight_freq.index(freq)))
-                            mean_EDRight_freq.append(freq)
-                
-                    if beh == 'abMovFrames':
-                        desc = 'Abnormal Movement'
-                    else:
-                        desc = 'Grooming'
-                
-                interLeftPaw = [list(a) for a in interLeftPaw]
-                interLeftPaw = list(zip(*interLeftPaw))
-                interRightPaw = [list(a) for a in interRightPaw]
-                interRightPaw = list(zip(*interRightPaw))
-                interNose = [list(a) for a in interNose]
-                interNose = list(zip(*interNose))
-                interEDLeft = [list(a) for a in interEDLeft]
-                interEDLeft = list(zip(*interLeftPaw))
-                interEDRight = [list(a) for a in interEDRight]
-                    
-                time = np.linspace(frame1,frame2,len(leftPaw),endpoint=True)
-                time = [frame/100 for frame in time]
-                
-                if plotting == False:
-                    
-                    xPixRange.append(max(interLeftPaw[0])-min(interLeftPaw[0]))
-                    yPixRange.append(max(interLeftPaw[1])-min(interLeftPaw[1]))
-                    EDPixRange.append(max(ED_Left)-min(ED_Left))
-                
-                    xPixRange.append(max(interRightPaw[0])-min(interRightPaw[0]))
-                    yPixRange.append(max(interRightPaw[1])-min(interRightPaw[1]))
-                    EDPixRange.append(max(ED_Right)-min(ED_Right))
-                
-                else:
-                    filename = plots.plotFilename(csvFile,beh)
-                    title = plots.plotTitle(mouse,day,reach,beh)
-                    
-                    plots.plotPixels(outDir,filename,title,time, interLeftPaw, interRightPaw, ED_Left, ED_Right, leftPaw_fft)
-                
-                ## Begin Plotting
-#                fig = plt.figure()
-#                ax1 = fig.add_subplot(rows,cols,1)
-#                ax2 = fig.add_subplot(rows,cols,2)
-#                ax3 = fig.add_subplot(rows,cols,3)
-#                ax4 = fig.add_subplot(rows,cols,4)
+#                ## Save values into dictionary for later mean calculations
+#                fftData[beh][mouse][day][reach]['leftPaw_freq'] = np.abs(leftPaw_freq[:N // 2])
+#                fftData[beh][mouse][day][reach]['leftPaw_fft'] = np.abs(leftPaw_fft[:N // 2])
+#                fftData[beh][mouse][day][reach]['rightPaw_freq'] = np.abs(rightPaw_freq[:N // 2])
+#                fftData[beh][mouse][day][reach]['rightPaw_fft'] = np.abs(rightPaw_fft[:N // 2])
+#                fftData[beh][mouse][day][reach]['nose_freq'] = np.abs(nose_freq[:N // 2])
+#                fftData[beh][mouse][day][reach]['nose_fft'] = np.abs(nose_fft[:N // 2])
+#                fftData[beh][mouse][day][reach]['EDLeft_fft'] = np.abs(EDLeft_fft[:N // 2])
+#                fftData[beh][mouse][day][reach]['EDRight_fft'] = np.abs(EDRight_fft[:N // 2])
 #                
+#                if averages == True:
+#                ## Save into the mean
+#                    if firstPass == 0:
+#                        mean_leftPaw_freq = np.abs(leftPaw_freq[:N // 2])
+#                        mean_leftPaw_fft = np.abs(leftPaw_fft[:N // 2])
+#                        mean_rightPaw_freq = np.abs(rightPaw_freq[:N // 2])
+#                        mean_rightPaw_fft = np.abs(rightPaw_fft[:N // 2])
+#                        mean_nose_freq = np.abs(nose_freq[:N // 2])
+#                        mean_nose_fft = np.abs(nose_fft[:N // 2])
+#                        mean_EDLeft_fft = np.abs(EDLeft_fft[:N // 2])
+#                        mean_EDRight_fft = np.abs(EDRight_fft[:N // 2])
+#                        mean_EDLeft_freq = np.abs(EDLeft_freq[:N // 2])
+#                        mean_EDRight_freq = np.abs(EDRight_freq[:N // 2])
+#                    else:
+#                        
+#                        for freq in np.abs(leftPaw_freq[:N // 2]):
+#                            try:
+#                                index = mean_leftPaw_freq[freq]
+#                                mean_leftPaw_fft[index] = (mean_leftPaw_fft[index] + freq)/2
+#                            except:
+#                                mean_leftPaw_fft.append(np.abs(leftPaw_freq.index(freq)))
+#                                mean_leftPaw_freq.append(freq)
+#     
+#                        for freq in np.abs(rightPaw_freq[:N // 2]):
+#                            try:
+#                                index = mean_rightPaw_freq[freq]
+#                                mean_rightPaw_fft[index] = (mean_rightPaw_fft[index] + freq)/2
+#                            except:
+#                                mean_rightPaw_fft.append(np.abs(rightPaw_freq.index(freq)))
+#                                mean_rightPaw_freq.append(freq)
+#                                
+#                        for freq in np.abs(nose_freq[:N // 2]):
+#                            try:
+#                                index = mean_nose_freq[freq]
+#                                mean_nose_fft[index] = (mean_nose_fft[index] + freq)/2
+#                            except:
+#                                mean_nose_fft.append(np.abs(nose_freq.index(freq)))
+#                                mean_nose_freq.append(freq)
+#                        
+#                        for freq in np.abs(EDLeft_freq[:N // 2]):
+#                            try:
+#                                index = mean_EDLeft_freq[freq]
+#                                mean_EDLeft_fft[index] = (mean_EDLeft_fft[index] + freq)/2
+#                            except:
+#                                mean_EDLeft_fft.append(np.abs(EDLeft_freq.index(freq)))
+#                                mean_EDLeft_freq.append(freq)
+#                                
+#                        for freq in np.abs(EDRight_freq[:N // 2]):
+#                            try:
+#                                index = mean_EDRight_freq[freq]
+#                                mean_EDRight_fft[index] = (mean_EDRight_fft[index] + freq)/2
+#                            except:
+#                                mean_EDRight_fft.append(np.abs(EDRight_freq.index(freq)))
+#                                mean_EDRight_freq.append(freq)
+#                
+#                interLeftPaw = [list(a) for a in interLeftPaw]
+#                interLeftPaw = list(zip(*interLeftPaw))
+#                interRightPaw = [list(a) for a in interRightPaw]
+#                interRightPaw = list(zip(*interRightPaw))
+#                interNose = [list(a) for a in interNose]
+#                interNose = list(zip(*interNose))
+#                interEDLeft = [list(a) for a in interEDLeft]
+#                interEDLeft = list(zip(*interLeftPaw))
+#                interEDRight = [list(a) for a in interEDRight]
+#                    
+#                time = np.linspace(frame1,frame2,len(leftPaw),endpoint=True)
+#                time = [frame/100 for frame in time]
+#                
+#                if plotting == True:
+#                    filename = plots.plotFilename(csvFile,beh)
+#                    title = plots.plotTitle(mouse,day,reach,beh)
+#                    
+#                    plots.plotPixels(outDir,filename,title,time, interLeftPaw, interRightPaw, ED_Left, ED_Right, leftPaw_fft)
+#                else:
+#                    xPixRange.append(max(interLeftPaw[0])-min(interLeftPaw[0]))
+#                    yPixRange.append(max(interLeftPaw[1])-min(interLeftPaw[1]))
+#                    EDPixRange.append(max(ED_Left)-min(ED_Left))
+#                
+#                    xPixRange.append(max(interRightPaw[0])-min(interRightPaw[0]))
+#                    yPixRange.append(max(interRightPaw[1])-min(interRightPaw[1]))
+#                    EDPixRange.append(max(ED_Right)-min(ED_Right))
+#                    
+#           
+#if plotting == False:
+#    yRange = []
+#    yRange.append(max(xPixRange))
+#    yRange.append(max(yPixRange))
+#    yRange.append(max(EDPixRange))
+#    yRange = np.ceil(max(yRange))
 
-#                
-#                ## Left Paw (first row, all columns)
-#                
-#                # First Column = x,y traces
-#                ax1.plot(interLeftPaw[0],interLeftPaw[1],'k')
-#                ax1.set_title('Trace of Paw over Time', size = 8)
-#                # Second Column = x trace over time
-#                ax2.plot(time,interLeftPaw[0],'b')
-#                ax2.set_title('Horizontal Movement (x-values)', size = 8)
-#                # Third Column = y trace over time
-#                ax3.plot(time,interLeftPaw[1],'g')
-#                ax3.set_title('Vertical Movement (y-values)', size = 8)
-#                # Fourth Column = Spectral analysis for animal
-#                ax4.plot(np.abs(leftPaw_fft[:N // 2]))
-#                ax4.set_xlim(lrange, urange)
-#                ax4.set_ylim(-5, 2500)
-#                ax4.set_title('Spectrogram', size = 8)
-#                
-#                plt.show()
-                
-#                ax1.plot(np.abs(leftPaw_fft[:N // 2]))
-#                ax1.set_xlim(lrange, urange)
-#                ax1.set_ylim(-5, 2500)
-#                ax1.set_title('Left Paw', size = 8)
-#                
-#                ax2.plot(np.abs(rightPaw_fft[:N // 2]))
-#                ax2.set_xlim(lrange, urange)
-#                ax2.set_ylim(-5, 2500)
-#                ax2.set_title('Right Paw', size = 8)
-#                
-#                ax3.plot(np.abs(nose_fft[:N // 2]))
-#                ax3.set_xlim(lrange, urange)
-#                ax3.set_ylim(-5, 2500)
-#                ax3.set_title('Nose', size = 8)
-#                
-#                fig.suptitle(desc + ' Power Analysis: ' + mouse, size=10)
-#                fig.tight_layout()
-#                fig.subplots_adjust(top=0.88)
-#                fig.savefig(outDir + beh + '_' + day + '_' + reach + '.pdf')
-#
-#                plt.close()
-#                
-
-if plotting == False:
-    yRange = []
-    yRange.append(max(xPixRange))
-    yRange.append(max(yPixRange))
-    yRange.append(max(EDPixRange))
-    yRange = np.ceil(max(yRange))
-
-
-#    ## Begin Plotting AVERAGES
-#    fig = plt.figure()
-#    
-#    ax1 = fig.add_subplot(rows,cols,1)
-#    ax2 = fig.add_subplot(rows,cols,2)
-#    ax3 = fig.add_subplot(rows,cols,3)
-#    
-#    ax1.plot(mean_leftPaw_freq,mean_leftPaw_fft)
-#    ax1.set_xlim(lrange, urange)
-#    ax1.set_ylim(-5, 2500)
-#    ax1.set_ylabel('Power')
-#    ax1.set_title('Left Paw', size = 8)
-#    ax2.plot(mean_rightPaw_freq,mean_rightPaw_fft)
-#    ax2.set_xlim(lrange, urange)
-#    ax2.set_ylim(-5, 2500)
-#    ax2.set_ylabel('Power')
-#    ax2.set_title('Right Paw', size = 8)
-#    ax3.plot(mean_nose_freq,mean_nose_fft)
-#    ax3.set_xlim(lrange, urange)
-#    ax3.set_ylim(-5, 2500)
-#    ax3.set_title('Nose', size = 8)
-#    ax3.set_xlabel('Frequency (Hz)')
-#    ax3.set_ylabel('Power')
-#    
-#    if beh == 'abMovFrames':
-#        desc = 'Abnormal Movements'
-#    else:
-#        desc = 'Grooming'
-#    
-#    fig.suptitle('Mean Power Analysis During '+ desc, size=10)
-#    fig.tight_layout()
-#    fig.subplots_adjust(top=0.88)
-#    fig.savefig(outDir + beh + '_mean.pdf')
-#    
-#    plt.close()
-        
                     
                 
                     

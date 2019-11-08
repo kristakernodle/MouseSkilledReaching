@@ -67,16 +67,33 @@ for beh in behaviors:
                 ax.set_title(beh+', '+day+', '+reach)
 #                ax.set_xlim(100,600)
 #                ax.set_ylim(200,900)
+                xlp = []
+                ylp = []
+                xrp = []
+                yrp = [] 
+                for i in list(range(0,len(leftPaw[0]))):
+                    nos_x = nose[0][i]
+                    nos_y = nose[0][i]
+                    lp_x = leftPaw[0][i]
+                    lp_y = leftPaw[1][i]
+                    rp_x = rightPaw[0][i]
+                    rp_y = rightPaw[1][i]
+
+                    xlp.append(lp_x-nos_x)
+                    ylp.append(lp_y-nos_y)
+                    xrp.append(rp_x-nos_x)
+                    yrp.append(rp_y-nos_y)
+                                
                 for i in list(range(0,len(leftPaw[0])-1)):
-                    ax.plot(leftPaw[0][i:i+2],leftPaw[1][i:i+2],color = blues(1 - float(i)/(len(leftPaw[0])-1)))
-                    ax.plot(rightPaw[0][i:i+2],rightPaw[1][i:i+2],color = greens(1 - float(i)/(len(leftPaw[0])-1)))
-                    ax.plot(nose[0][i:i+2],nose[1][i:i+2],color = greys(1 - float(i)/(len(leftPaw[0])-1)))
+                    ax.plot(xlp[i:i+2],ylp[i:i+2],color = blues(1 - float(i)/(len(leftPaw[0])-1)))
+                    ax.plot(xrp[i:i+2],yrp[i:i+2],color = greens(1 - float(i)/(len(leftPaw[0])-1)))
+                    ax.plot(0,0,'*',color = 'k')
                 
                 plotNum += 2
 #fig.suptitle('Mean Power Analysis During '+ desc, size=10)
 fig.tight_layout()
 fig.subplots_adjust(top=0.98)               
-fig.savefig('/Users/Krista/Desktop/test_xyTraces.pdf')
+fig.savefig('/Users/Krista/Desktop/noseOrig_xyTraces.pdf')
 plt.close()
                 
                 

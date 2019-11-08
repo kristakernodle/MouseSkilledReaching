@@ -15,10 +15,11 @@ import plots
 import frameDict
 frameDict = frameDict.frameDict
 
-def getInterp(dirDLC,outDir,view='Center',fps=100):
-    
-    interpData = {}
-    
+def makeInterpDicts(dirDLC,outDir,view='Center',fps=100):
+    """
+    Creates .pickle files for each training day
+    """
+
     ## Get the behaviors (keys) from the frameDict
     behaviors = list(frameDict.keys())
     

@@ -11,16 +11,15 @@ Created on Tue Oct 15 09:14:28 2019
 # =============================================================================
 
 import os
+import pickle
 import numpy as np
 from scipy import fftpack
 
 import funcs
-import plots
 import frameDict
 frameDict = frameDict.frameDict
 
 dirDLC = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCProcessing/currentDLCIter/'
-outDir = '/Users/kkrista/Desktop/'
 
 view = 'Center'
 plotting = False
@@ -34,12 +33,16 @@ yPixRange = []
 EDPixRange = []
 
 fftData = {}
+interpData = {}
  
+frameDist = []
+
 ## Get the behaviors (keys) from the frameDict
 behaviors = list(frameDict.keys())
 
 for item in behaviors:
     fftData[item] = {}
+    interpData[item] = {}
 
 ## Start looping through the keys in frameDict (abMovFrames and groom)
 for beh in behaviors:
@@ -61,6 +64,7 @@ for beh in behaviors:
     for mouse in animals:
 
         fftData[beh][mouse] = {}
+        interpData[beh][mouse] = {}
         
         # Get all relevant dates for this mouse
         allDates = list(frameDict[beh][mouse].keys())
@@ -69,10 +73,12 @@ for beh in behaviors:
         for day in allDates:
 
             fftData[beh][mouse][day] = {}
+            interpData[beh][mouse][day] = {}
             
             # Get all relevant reaches
             reaches = list(frameDict[beh][mouse][day].keys())
             fftData[beh][mouse][day]['reaches']=reaches
+            interpData[beh][mouse][day]['reaches']=reaches
             # Get all files in DLC directory for this mouse
             allFiles = os.listdir(dirDLC + mouse + '/DLC/')
             
@@ -80,6 +86,7 @@ for beh in behaviors:
             for reach in reaches:
                 
                 fftData[beh][mouse][day][reach] = {}
+                interpData[beh][mouse][day][reach] = {}
                 
                 allcsvFiles = []
                 
@@ -98,13 +105,29 @@ for beh in behaviors:
                 # Read in file
                 [leftPaw, rightPaw, nose, pellet] = funcs.readDLC(dirDLC + mouse + '/DLC/' + csvFile)
                 
+                interpData[beh][mouse][day][reach]['dlcData'] = {}
+                interpData[beh][mouse][day][reach]['dlcData']['leftPaw'] = leftPaw
+                interpData[beh][mouse][day][reach]['dlcData']['rightPaw'] = rightPaw
+                interpData[beh][mouse][day][reach]['dlcData']['nose'] = nose
+                interpData[beh][mouse][day][reach]['dlcData']['pellet'] = pellet
+                
                 # Get the start and stop frames for this reach
                 frame1 = frameDict[beh][mouse][day][reach][0]
                 frame2 = frameDict[beh][mouse][day][reach][1]
                 
+                frameDist.append(frame2-frame1)
+                
                 if frame2 > len(leftPaw):
                     frame2 = len(leftPaw)
                     
+#                # Based on previous run of max(frameDist), adjust frame1 and frame2 to have the same number of frames
+#                if frame2-frame1 < 300:
+#                        
+#                    
+#                    while frame2 < len(leftPaw) and frame1 > 0:
+#                        frame1 -= 1
+#                        frame2 += 1
+                
                 # Cut to relevant frames
                 leftPaw = leftPaw[frame1:frame2]
                 rightPaw = rightPaw[frame1:frame2]
@@ -124,6 +147,12 @@ for beh in behaviors:
                     ED_Left.append(funcs.ptDist(leftPaw[index][0:2],item[0:2]))
                     ED_Right.append(funcs.ptDist(rightPaw[index][0:2],item[0:2]))
                     index += 1
+                interpData[beh][mouse][day][reach]['rawData'] = {}
+                interpData[beh][mouse][day][reach]['rawData']['leftPaw'] = leftPaw
+                interpData[beh][mouse][day][reach]['rawData']['rightPaw'] = rightPaw
+                interpData[beh][mouse][day][reach]['rawData']['nose'] = nose
+                interpData[beh][mouse][day][reach]['rawData']['ED_Left'] = ED_Left
+                interpData[beh][mouse][day][reach]['rawData']['ED_Right'] = ED_Right
                 
                 # Mask data
                 xLeft_masked, yLeft_masked, pLeft_masked = funcs.maskData(leftPaw)
@@ -134,6 +163,21 @@ for beh in behaviors:
                 EDRightMask = [any(tup) for tup in zip(xRight_masked.mask,xNose_masked.mask)]
                 edLeft_masked = np.ma.masked_array(data=ED_Left,mask=EDLeftMask)
                 edRight_masked = np.ma.masked_array(data=ED_Right,mask=EDRightMask)
+                
+                interpData[beh][mouse][day][reach]['maskedData'] = {}
+                interpData[beh][mouse][day][reach]['maskedData']['leftPaw'] = {}
+                interpData[beh][mouse][day][reach]['maskedData']['rightPaw'] = {}
+                interpData[beh][mouse][day][reach]['maskedData']['nose'] = {}
+                
+                interpData[beh][mouse][day][reach]['maskedData']['leftPaw']['x'] = xLeft_masked
+                interpData[beh][mouse][day][reach]['maskedData']['leftPaw']['y'] = yLeft_masked
+                interpData[beh][mouse][day][reach]['maskedData']['rightPaw']['x'] = xRight_masked
+                interpData[beh][mouse][day][reach]['maskedData']['rightPaw']['y'] = yRight_masked
+                interpData[beh][mouse][day][reach]['maskedData']['nose']['x'] = xNose_masked
+                interpData[beh][mouse][day][reach]['maskedData']['nose']['y'] = yNose_masked
+                
+                interpData[beh][mouse][day][reach]['maskedData']['ED_Left'] = edLeft_masked
+                interpData[beh][mouse][day][reach]['maskedData']['ED_Right'] = edRight_masked
                 
                 # Begin Interpolation
                 x = list(range(frame1,frame2))
@@ -161,10 +205,14 @@ for beh in behaviors:
                 except:
                     print('This data is missing something')
                     continue
-                
-                
-                
-                
+
+                interpData[beh][mouse][day][reach]['interpData'] = {}
+                interpData[beh][mouse][day][reach]['interpData']['leftPaw'] = interLeftPaw
+                interpData[beh][mouse][day][reach]['interpData']['rightPaw'] = interRightPaw
+                interpData[beh][mouse][day][reach]['interpData']['nose'] = interNose
+                interpData[beh][mouse][day][reach]['interpData']['ED_Left'] = interEDLeft
+                interpData[beh][mouse][day][reach]['interpData']['ED_Right'] = interEDRight
+
                 # Perform FFT
                 leftPaw_fft = fftpack.fft2(interLeftPaw)
                 
@@ -183,105 +231,81 @@ for beh in behaviors:
                 EDLeft_freq = fftpack.fftfreq(N,d=0.01)
                 EDRight_freq = fftpack.fftfreq(N,d=0.01)
                         
-#                ## Save values into dictionary for later mean calculations
-#                fftData[beh][mouse][day][reach]['leftPaw_freq'] = np.abs(leftPaw_freq[:N // 2])
-#                fftData[beh][mouse][day][reach]['leftPaw_fft'] = np.abs(leftPaw_fft[:N // 2])
-#                fftData[beh][mouse][day][reach]['rightPaw_freq'] = np.abs(rightPaw_freq[:N // 2])
-#                fftData[beh][mouse][day][reach]['rightPaw_fft'] = np.abs(rightPaw_fft[:N // 2])
-#                fftData[beh][mouse][day][reach]['nose_freq'] = np.abs(nose_freq[:N // 2])
-#                fftData[beh][mouse][day][reach]['nose_fft'] = np.abs(nose_fft[:N // 2])
-#                fftData[beh][mouse][day][reach]['EDLeft_fft'] = np.abs(EDLeft_fft[:N // 2])
-#                fftData[beh][mouse][day][reach]['EDRight_fft'] = np.abs(EDRight_fft[:N // 2])
-#                
-#                if averages == True:
-#                ## Save into the mean
-#                    if firstPass == 0:
-#                        mean_leftPaw_freq = np.abs(leftPaw_freq[:N // 2])
-#                        mean_leftPaw_fft = np.abs(leftPaw_fft[:N // 2])
-#                        mean_rightPaw_freq = np.abs(rightPaw_freq[:N // 2])
-#                        mean_rightPaw_fft = np.abs(rightPaw_fft[:N // 2])
-#                        mean_nose_freq = np.abs(nose_freq[:N // 2])
-#                        mean_nose_fft = np.abs(nose_fft[:N // 2])
-#                        mean_EDLeft_fft = np.abs(EDLeft_fft[:N // 2])
-#                        mean_EDRight_fft = np.abs(EDRight_fft[:N // 2])
-#                        mean_EDLeft_freq = np.abs(EDLeft_freq[:N // 2])
-#                        mean_EDRight_freq = np.abs(EDRight_freq[:N // 2])
-#                    else:
-#                        
-#                        for freq in np.abs(leftPaw_freq[:N // 2]):
-#                            try:
-#                                index = mean_leftPaw_freq[freq]
-#                                mean_leftPaw_fft[index] = (mean_leftPaw_fft[index] + freq)/2
-#                            except:
-#                                mean_leftPaw_fft.append(np.abs(leftPaw_freq.index(freq)))
-#                                mean_leftPaw_freq.append(freq)
-#     
-#                        for freq in np.abs(rightPaw_freq[:N // 2]):
-#                            try:
-#                                index = mean_rightPaw_freq[freq]
-#                                mean_rightPaw_fft[index] = (mean_rightPaw_fft[index] + freq)/2
-#                            except:
-#                                mean_rightPaw_fft.append(np.abs(rightPaw_freq.index(freq)))
-#                                mean_rightPaw_freq.append(freq)
-#                                
-#                        for freq in np.abs(nose_freq[:N // 2]):
-#                            try:
-#                                index = mean_nose_freq[freq]
-#                                mean_nose_fft[index] = (mean_nose_fft[index] + freq)/2
-#                            except:
-#                                mean_nose_fft.append(np.abs(nose_freq.index(freq)))
-#                                mean_nose_freq.append(freq)
-#                        
-#                        for freq in np.abs(EDLeft_freq[:N // 2]):
-#                            try:
-#                                index = mean_EDLeft_freq[freq]
-#                                mean_EDLeft_fft[index] = (mean_EDLeft_fft[index] + freq)/2
-#                            except:
-#                                mean_EDLeft_fft.append(np.abs(EDLeft_freq.index(freq)))
-#                                mean_EDLeft_freq.append(freq)
-#                                
-#                        for freq in np.abs(EDRight_freq[:N // 2]):
-#                            try:
-#                                index = mean_EDRight_freq[freq]
-#                                mean_EDRight_fft[index] = (mean_EDRight_fft[index] + freq)/2
-#                            except:
-#                                mean_EDRight_fft.append(np.abs(EDRight_freq.index(freq)))
-#                                mean_EDRight_freq.append(freq)
-#                
-#                interLeftPaw = [list(a) for a in interLeftPaw]
-#                interLeftPaw = list(zip(*interLeftPaw))
-#                interRightPaw = [list(a) for a in interRightPaw]
-#                interRightPaw = list(zip(*interRightPaw))
-#                interNose = [list(a) for a in interNose]
-#                interNose = list(zip(*interNose))
-#                interEDLeft = [list(a) for a in interEDLeft]
-#                interEDLeft = list(zip(*interLeftPaw))
-#                interEDRight = [list(a) for a in interEDRight]
-#                    
-#                time = np.linspace(frame1,frame2,len(leftPaw),endpoint=True)
-#                time = [frame/100 for frame in time]
-#                
-#                if plotting == True:
-#                    filename = plots.plotFilename(csvFile,beh)
-#                    title = plots.plotTitle(mouse,day,reach,beh)
-#                    
-#                    plots.plotPixels(outDir,filename,title,time, interLeftPaw, interRightPaw, ED_Left, ED_Right, leftPaw_fft)
-#                else:
-#                    xPixRange.append(max(interLeftPaw[0])-min(interLeftPaw[0]))
-#                    yPixRange.append(max(interLeftPaw[1])-min(interLeftPaw[1]))
-#                    EDPixRange.append(max(ED_Left)-min(ED_Left))
-#                
-#                    xPixRange.append(max(interRightPaw[0])-min(interRightPaw[0]))
-#                    yPixRange.append(max(interRightPaw[1])-min(interRightPaw[1]))
-#                    EDPixRange.append(max(ED_Right)-min(ED_Right))
-#                    
-#           
-#if plotting == False:
-#    yRange = []
-#    yRange.append(max(xPixRange))
-#    yRange.append(max(yPixRange))
-#    yRange.append(max(EDPixRange))
-#    yRange = np.ceil(max(yRange))
+                ## Save values into dictionary for later mean calculations
+                fftData[beh][mouse][day][reach]['leftPaw_freq'] = np.abs(leftPaw_freq[:N // 2])
+                fftData[beh][mouse][day][reach]['leftPaw_fft'] = np.abs(leftPaw_fft[:N // 2])
+                fftData[beh][mouse][day][reach]['rightPaw_freq'] = np.abs(rightPaw_freq[:N // 2])
+                fftData[beh][mouse][day][reach]['rightPaw_fft'] = np.abs(rightPaw_fft[:N // 2])
+                fftData[beh][mouse][day][reach]['nose_freq'] = np.abs(nose_freq[:N // 2])
+                fftData[beh][mouse][day][reach]['nose_fft'] = np.abs(nose_fft[:N // 2])
+                fftData[beh][mouse][day][reach]['EDLeft_fft'] = np.abs(EDLeft_fft[:N // 2])
+                fftData[beh][mouse][day][reach]['EDRight_fft'] = np.abs(EDRight_fft[:N // 2])
+                
+                ## Save into the mean
+                if firstPass == 0:
+                    mean_leftPaw_freq = np.abs(leftPaw_freq[:N // 2])
+                    mean_leftPaw_fft = np.abs(leftPaw_fft[:N // 2])
+                    mean_rightPaw_freq = np.abs(rightPaw_freq[:N // 2])
+                    mean_rightPaw_fft = np.abs(rightPaw_fft[:N // 2])
+                    mean_nose_freq = np.abs(nose_freq[:N // 2])
+                    mean_nose_fft = np.abs(nose_fft[:N // 2])
+                    mean_EDLeft_fft = np.abs(EDLeft_fft[:N // 2])
+                    mean_EDRight_fft = np.abs(EDRight_fft[:N // 2])
+                    mean_EDLeft_freq = np.abs(EDLeft_freq[:N // 2])
+                    mean_EDRight_freq = np.abs(EDRight_freq[:N // 2])
+                else:
+                    
+                    for freq in np.abs(leftPaw_freq[:N // 2]):
+                        try:
+                            index = mean_leftPaw_freq[freq]
+                            mean_leftPaw_fft[index] = (mean_leftPaw_fft[index] + freq)/2
+                        except:
+                            mean_leftPaw_fft.append(np.abs(leftPaw_freq.index(freq)))
+                            mean_leftPaw_freq.append(freq)
+ 
+                    for freq in np.abs(rightPaw_freq[:N // 2]):
+                        try:
+                            index = mean_rightPaw_freq[freq]
+                            mean_rightPaw_fft[index] = (mean_rightPaw_fft[index] + freq)/2
+                        except:
+                            mean_rightPaw_fft.append(np.abs(rightPaw_freq.index(freq)))
+                            mean_rightPaw_freq.append(freq)
+                            
+                    for freq in np.abs(nose_freq[:N // 2]):
+                        try:
+                            index = mean_nose_freq[freq]
+                            mean_nose_fft[index] = (mean_nose_fft[index] + freq)/2
+                        except:
+                            mean_nose_fft.append(np.abs(nose_freq.index(freq)))
+                            mean_nose_freq.append(freq)
+                    
+                    for freq in np.abs(EDLeft_freq[:N // 2]):
+                        try:
+                            index = mean_EDLeft_freq[freq]
+                            mean_EDLeft_fft[index] = (mean_EDLeft_fft[index] + freq)/2
+                        except:
+                            mean_EDLeft_fft.append(np.abs(EDLeft_freq.index(freq)))
+                            mean_EDLeft_freq.append(freq)
+                            
+                    for freq in np.abs(EDRight_freq[:N // 2]):
+                        try:
+                            index = mean_EDRight_freq[freq]
+                            mean_EDRight_fft[index] = (mean_EDRight_fft[index] + freq)/2
+                        except:
+                            mean_EDRight_fft.append(np.abs(EDRight_freq.index(freq)))
+                            mean_EDRight_freq.append(freq)
+                
+# =============================================================================
+# I now have fftData and interpData dictionaries to work from
+# =============================================================================
+                            
+# Save these dictionaries for future use
+with open(dirDLC + 'combined_allData.pickle','wb+') as pickleFile:
+    pickle.dump(interpData, pickleFile, protocol=pickle.HIGHEST_PROTOCOL)   
+
+with open(dirDLC + 'combined_fftData.pickle','wb+') as pickleFile:
+    pickle.dump(fftData, pickleFile, protocol=pickle.HIGHEST_PROTOCOL)                        
+
 
                     
                 

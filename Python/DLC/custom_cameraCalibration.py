@@ -17,12 +17,14 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
+os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
+import custom_auxiliaryFunctions as caf
+
 
 def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     '''
-    Note: The checkerboard I used for getting the intrinsic parameters of the cameras is
+    Note: The checkerboard I used for getting the intrinsic parameters of the cameras is 9 by 6
     '''
-
 
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -34,13 +36,8 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     
     # Read the config file
     cfg_3d = auxiliaryfunctions.read_config(config)
-
-###### This will need to be modified
-    # I want the pictures for the intrinsic parameters in one folder but the calibration images for each day in a separate folder
-    img_path,path_corners,path_camera_matrix,path_undistort=auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
+    img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,True)
     
-
-
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
     

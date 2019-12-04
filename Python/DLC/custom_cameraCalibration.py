@@ -112,6 +112,3 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
                 error = cv2.norm(imgpoints[cam][i],imgpoints_proj, cv2.NORM_L2)/len(imgpoints_proj)
                 mean_error += error
             print("Mean re-projection error for %s images: %.3f pixels " %(cam, mean_error/len(objpoints[cam])))
-          
-def calibrate_forDay():
-    

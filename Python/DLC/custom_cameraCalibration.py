@@ -12,15 +12,13 @@ import cv2
 import os
 import pickle
 import glob
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
 
-def calibrate_cameras(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
+def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     """Modified by Krista Kernodle from DeepLabCut
     
     Modifications:
@@ -100,7 +98,6 @@ def calibrate_cameras(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     objpoints = {} # 3d point in real world space
     imgpoints = {} # 2d points in image plane.
     dist_pickle = {}
-    stereo_params= {}
     for cam in cam_names:
         objpoints.setdefault(cam, [])
         imgpoints.setdefault(cam, [])
@@ -154,6 +151,6 @@ def calibrate_cameras(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
                 error = cv2.norm(imgpoints[cam][i],imgpoints_proj, cv2.NORM_L2)/len(imgpoints_proj)
                 mean_error += error
             print("Mean re-projection error for %s images: %.3f pixels " %(cam, mean_error/len(objpoints[cam])))
-            
-            # Compute stereo calibration for each pair of cameras
-            camera_pair = [[cam_names[0], cam_names[1]]]
+          
+def calibrate_forDay():
+    

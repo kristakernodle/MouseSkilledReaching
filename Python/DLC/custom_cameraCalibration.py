@@ -14,8 +14,6 @@ import pickle
 import glob
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils import auxiliaryfunctions_3d
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
-matplotlib_axes_logger.setLevel('ERROR')
 
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
 import custom_auxiliaryFunctions as caf

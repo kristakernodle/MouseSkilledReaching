@@ -36,6 +36,12 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     cfg_3d = auxiliaryfunctions.read_config(config)
     img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,True)
     
+    # If the paths do not exist, create them
+    if not os.path.exists(img_path):
+        os.makedirs(img_path)
+    if not os.path.exists(path_corners):
+        os.makedirs(path_corners)
+    
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
     
@@ -159,9 +165,14 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     objp[:, :2] = np.mgrid[0:cbcol, 0:cbrow].T.reshape(-1, 2)
     
     # Read the config file
-    # I need to update the foldernames3dproject function to make sure that the folders are present or update the create a project function
     cfg_3d = auxiliaryfunctions.read_config(config)
     img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d)
+    
+    # Make sure that the folders are present (if not, make them)
+    if not os.path.exists(img_path):
+        os.makedirs(img_path)
+    if not os.path.exists(path_corners):
+        os.makedirs(path_corners)
     
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']

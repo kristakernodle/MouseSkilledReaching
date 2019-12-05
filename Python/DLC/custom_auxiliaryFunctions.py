@@ -15,9 +15,4 @@ def Foldernames3Dproject(cfg_3d,intrinsic=False):
     path_camera_matrix = os.path.join(cfg_3d['project_path'],'camera_matrix')
     path_undistort = os.path.join(cfg_3d['project_path'],'undistortion')
     
-    if not os.path.exists(img_path):
-        os.makedirs(img_path)
-    if not os.path.exists(path_corners):
-        os.makedirs(path_corners)
-    
     return img_path,path_corners,path_camera_matrix,path_undistort

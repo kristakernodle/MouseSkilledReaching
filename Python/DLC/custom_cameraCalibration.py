@@ -174,6 +174,7 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     if not os.path.exists(path_corners):
         os.makedirs(path_corners)
     
+    # Get images and camera names
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
     
@@ -233,31 +234,34 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate == True:
-        # Read in the intrinsic parameters for each camera
-
-        # Compute stereo calibration for each pair of cameras
-        camera_pair = [[cam_names[0], cam_names[1]]]
-        for pair in camera_pair:
-            print("Computing stereo calibration for " %pair)
-            retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints[pair[0]],imgpoints[pair[0]],imgpoints[pair[1]],dist_pickle[pair[0]]['mtx'],dist_pickle[pair[0]]['dist'], dist_pickle[pair[1]]['mtx'], dist_pickle[pair[1]]['dist'],(h,  w),flags = cv2.CALIB_FIX_INTRINSIC)
-
-            # Stereo Rectification
-            rectify_scale = alpha # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
-            R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, (h, w), R, T, alpha = rectify_scale)
-            
-            stereo_params[pair[0]+'-'+pair[1]] = {"cameraMatrix1": cameraMatrix1,"cameraMatrix2": cameraMatrix2,"distCoeffs1": distCoeffs1,"distCoeffs2": distCoeffs2,"R":R,"T":T,"E":E,"F":F,
-                         "R1":R1,
-                         "R2":R2,
-                         "P1":P1,
-                         "P2":P2,
-                         "roi1":roi1,
-                         "roi2":roi2,
-                         "Q":Q,
-                         "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]}
-            
-        print('Saving the stereo parameters for every pair of cameras as a pickle file in %s'%str(os.path.join(path_camera_matrix)))
         
-        auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'),stereo_params)
-        print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
-    else:
-        print("Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."%str(path_corners))
+        # Read in the intrinsic parameters for each camera
+        for cam in cam_names:
+            dist_pickle[cam] = pickle.load(os.path.join(path_camera_matrix,cam+'_intrinsic_params.pickle'))
+
+    #     # Compute stereo calibration for each pair of cameras
+    #     camera_pair = [[cam_names[0], cam_names[1]]]
+    #     for pair in camera_pair:
+    #         print("Computing stereo calibration for " %pair)
+    #         retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints[pair[0]],imgpoints[pair[0]],imgpoints[pair[1]],dist_pickle[pair[0]]['mtx'],dist_pickle[pair[0]]['dist'], dist_pickle[pair[1]]['mtx'], dist_pickle[pair[1]]['dist'],(h,  w),flags = cv2.CALIB_FIX_INTRINSIC)
+
+    #         # Stereo Rectification
+    #         rectify_scale = alpha # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
+    #         R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, (h, w), R, T, alpha = rectify_scale)
+            
+    #         stereo_params[pair[0]+'-'+pair[1]] = {"cameraMatrix1": cameraMatrix1,"cameraMatrix2": cameraMatrix2,"distCoeffs1": distCoeffs1,"distCoeffs2": distCoeffs2,"R":R,"T":T,"E":E,"F":F,
+    #                      "R1":R1,
+    #                      "R2":R2,
+    #                      "P1":P1,
+    #                      "P2":P2,
+    #                      "roi1":roi1,
+    #                      "roi2":roi2,
+    #                      "Q":Q,
+    #                      "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]}
+            
+    #     print('Saving the stereo parameters for every pair of cameras as a pickle file in %s'%str(os.path.join(path_camera_matrix)))
+        
+    #     auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'),stereo_params)
+    #     print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
+    # else:
+    #     print("Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."%str(path_corners))

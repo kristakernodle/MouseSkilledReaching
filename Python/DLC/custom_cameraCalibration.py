@@ -18,7 +18,6 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
 import custom_auxiliaryFunctions as caf
 
-
 def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     '''
     Note: The checkerboard I used for getting the intrinsic parameters of the cameras is 9 by 6

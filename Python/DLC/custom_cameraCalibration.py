@@ -112,7 +112,7 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
             print("Mean re-projection error for %s images: %.3f pixels " %(cam, mean_error/len(objpoints[cam])))
 
 def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
-       """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
+    """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
     
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images. 
     
@@ -154,7 +154,6 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    
     # Prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((cbrow * cbcol, 3), np.float32)
     objp[:, :2] = np.mgrid[0:cbcol, 0:cbrow].T.reshape(-1, 2)

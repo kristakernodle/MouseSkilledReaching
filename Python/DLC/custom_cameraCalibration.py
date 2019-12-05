@@ -18,7 +18,6 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
 import custom_auxiliaryFunctions as caf
 
-
 def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     '''
     Note: The checkerboard I used for getting the intrinsic parameters of the cameras is 9 by 6
@@ -35,6 +34,12 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     # Read the config file
     cfg_3d = auxiliaryfunctions.read_config(config)
     img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,True)
+    
+    # If the paths do not exist, create them
+    if not os.path.exists(img_path):
+        os.makedirs(img_path)
+    if not os.path.exists(path_corners):
+        os.makedirs(path_corners)
     
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
@@ -112,7 +117,7 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
             print("Mean re-projection error for %s images: %.3f pixels " %(cam, mean_error/len(objpoints[cam])))
 
 def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
-       """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
+    """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
     
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images. 
     
@@ -154,16 +159,21 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    
     # Prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((cbrow * cbcol, 3), np.float32)
     objp[:, :2] = np.mgrid[0:cbcol, 0:cbrow].T.reshape(-1, 2)
     
     # Read the config file
-    # I need to update the foldernames3dproject function to make sure that the folders are present or update the create a project function
     cfg_3d = auxiliaryfunctions.read_config(config)
     img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d)
     
+    # Make sure that the folders are present (if not, make them)
+    if not os.path.exists(img_path):
+        os.makedirs(img_path)
+    if not os.path.exists(path_corners):
+        os.makedirs(path_corners)
+    
+    # Get images and camera names
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
     
@@ -196,6 +206,16 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
     
+    ## I want to rewrite this section a bit. The idea would be that I can pull the same image for both cameras and just crop it accordingly.
+    ## The main output of this function is the checkerboard for each view. 
+    ## I want to:
+    ##  1.  loop through image
+    ##  2.  Load current image
+    ##  3.  create switch/case or if statement for cropping and getting the image of interest
+    ##  4.  Starting with the mirror image, try the BGR colors until you get one that works
+    ##  5.  Use the same BGR color for the direct view camera
+
+    #### MORE THOUGHTS ABOUT WHAT NEEDS TO HAPPEN I'LL HAVE TO ADD LATER
     for fname in images:
         for cam in cam_names:
             if cam in fname:
@@ -223,31 +243,34 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate == True:
-        # Read in the intrinsic parameters for each camera
-
-        # Compute stereo calibration for each pair of cameras
-        camera_pair = [[cam_names[0], cam_names[1]]]
-        for pair in camera_pair:
-            print("Computing stereo calibration for " %pair)
-            retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints[pair[0]],imgpoints[pair[0]],imgpoints[pair[1]],dist_pickle[pair[0]]['mtx'],dist_pickle[pair[0]]['dist'], dist_pickle[pair[1]]['mtx'], dist_pickle[pair[1]]['dist'],(h,  w),flags = cv2.CALIB_FIX_INTRINSIC)
-
-            # Stereo Rectification
-            rectify_scale = alpha # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
-            R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, (h, w), R, T, alpha = rectify_scale)
-            
-            stereo_params[pair[0]+'-'+pair[1]] = {"cameraMatrix1": cameraMatrix1,"cameraMatrix2": cameraMatrix2,"distCoeffs1": distCoeffs1,"distCoeffs2": distCoeffs2,"R":R,"T":T,"E":E,"F":F,
-                         "R1":R1,
-                         "R2":R2,
-                         "P1":P1,
-                         "P2":P2,
-                         "roi1":roi1,
-                         "roi2":roi2,
-                         "Q":Q,
-                         "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]}
-            
-        print('Saving the stereo parameters for every pair of cameras as a pickle file in %s'%str(os.path.join(path_camera_matrix)))
         
-        auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'),stereo_params)
-        print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
-    else:
-        print("Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."%str(path_corners))
+        # Read in the intrinsic parameters for each camera
+        for cam in cam_names:
+            dist_pickle[cam] = pickle.load(os.path.join(path_camera_matrix,cam+'_intrinsic_params.pickle'))
+
+    #     # Compute stereo calibration for each pair of cameras
+    #     camera_pair = [[cam_names[0], cam_names[1]]]
+    #     for pair in camera_pair:
+    #         print("Computing stereo calibration for " %pair)
+    #         retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints[pair[0]],imgpoints[pair[0]],imgpoints[pair[1]],dist_pickle[pair[0]]['mtx'],dist_pickle[pair[0]]['dist'], dist_pickle[pair[1]]['mtx'], dist_pickle[pair[1]]['dist'],(h,  w),flags = cv2.CALIB_FIX_INTRINSIC)
+
+    #         # Stereo Rectification
+    #         rectify_scale = alpha # Free scaling parameter check this https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#fisheye-stereorectify
+    #         R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, (h, w), R, T, alpha = rectify_scale)
+            
+    #         stereo_params[pair[0]+'-'+pair[1]] = {"cameraMatrix1": cameraMatrix1,"cameraMatrix2": cameraMatrix2,"distCoeffs1": distCoeffs1,"distCoeffs2": distCoeffs2,"R":R,"T":T,"E":E,"F":F,
+    #                      "R1":R1,
+    #                      "R2":R2,
+    #                      "P1":P1,
+    #                      "P2":P2,
+    #                      "roi1":roi1,
+    #                      "roi2":roi2,
+    #                      "Q":Q,
+    #                      "image_shape":[img_shape[pair[0]],img_shape[pair[1]]]}
+            
+    #     print('Saving the stereo parameters for every pair of cameras as a pickle file in %s'%str(os.path.join(path_camera_matrix)))
+        
+    #     auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix,'stereo_params.pickle'),stereo_params)
+    #     print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
+    # else:
+    #     print("Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."%str(path_corners))

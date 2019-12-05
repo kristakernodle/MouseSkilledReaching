@@ -153,16 +153,18 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     
     # Get images and camera names
     images = glob.glob(os.path.join(img_path,'*.jpg'))
+
     cam_names = cfg_3d['camera_names']
     
-    # update the variable snapshot* in config file according to the name of the cameras
-    try:
-        for i in range(len(cam_names)):
-            cfg_3d[str('config_file_'+cam_names[i])] = cfg_3d.pop(str('config_file_camera-'+str(i+1)))
-        for i in range(len(cam_names)):
-            cfg_3d[str('shuffle_'+cam_names[i])] = cfg_3d.pop(str('shuffle_camera-'+str(i+1)))
-    except:
-        pass
+    ## It's not clear to me why I want to do this or what this number represents... I need to read further into it
+    # # update the variable snapshot* in config file according to the name of the cameras
+    # try:
+    #     for i in range(len(cam_names)):
+    #         cfg_3d[str('config_file_'+cam_names[i])] = cfg_3d.pop(str('config_file_camera-'+str(i+1)))
+    #     for i in range(len(cam_names)):
+    #         cfg_3d[str('shuffle_'+cam_names[i])] = cfg_3d.pop(str('shuffle_camera-'+str(i+1)))
+    # except:
+    #     pass
     
     project_path = cfg_3d['project_path']
     projconfigfile=os.path.join(str(project_path),'config.yaml')

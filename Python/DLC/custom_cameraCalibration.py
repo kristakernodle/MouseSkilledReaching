@@ -206,6 +206,16 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
     
+    ## I want to rewrite this section a bit. The idea would be that I can pull the same image for both cameras and just crop it accordingly.
+    ## The main output of this function is the checkerboard for each view. 
+    ## I want to:
+    ##  1.  loop through image
+    ##  2.  Load current image
+    ##  3.  create switch/case or if statement for cropping and getting the image of interest
+    ##  4.  Starting with the mirror image, try the BGR colors until you get one that works
+    ##  5.  Use the same BGR color for the direct view camera
+
+    #### MORE THOUGHTS ABOUT WHAT NEEDS TO HAPPEN I'LL HAVE TO ADD LATER
     for fname in images:
         for cam in cam_names:
             if cam in fname:

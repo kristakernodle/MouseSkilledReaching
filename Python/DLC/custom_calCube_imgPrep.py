@@ -19,31 +19,34 @@ images = glob.glob(os.path.join(img_path,'*.jpg'))
 for image in images:
     filename = image.split('/')[-1]
     date = filename.split('_')[0]
-
+    filename_parts = filename.split('-')
     img = cv2.imread(image)
 
     # Direct Crop
     for day in cropParams_direct:
         if date == day.split(',')[0]:
-            x1 = day.split(',')[1]
-            x2 = day.split(',')[2]
-            y1 = day.split(',')[3]
-            y2 = day.split(',')[4]
+            d_x1 = int(day.split(',')[1])
+            d_x2 = int(day.split(',')[2])
+            d_y1 = int(day.split(',')[3])
+            d_y2 = int(day.split(',')[4])
             break
-    img_directView = img(x1:x2,y1:y2,:)
+    if d_y2 == len(img[:,0,0]):
+        d_y2 = d_y2-1
+    img_directView = img[d_y1:d_y2,d_x1:d_x2,:]
     
     # Mirror Crop
     for day in cropParams_right:
         if date == day.split(',')[0]:
-            x1 = day.split(',')[1]
-            x2 = day.split(',')[2]
-            y1 = day.split(',')[3]
-            y2 = day.split(',')[4]
+            m_x1 = int(day.split(',')[1])
+            m_x2 = int(day.split(',')[2])
+            m_y1 = int(day.split(',')[3])
+            m_y2 = int(day.split(',')[4])
             break
-    img_rightView = img(x1:x2,y1:y2,:)
-
+    if m_x2 == len(img[0,:,0]):
+        m_x2 = m_x2 - 1
+    if m_y2 == len(img[:,0,0]):
+        m_y2 = m_y2-1
+    img_rightView = img[m_y1:m_y2,m_x1:m_x2,:]
     
-
-    
-    
-    
+    cv2.imwrite(img_path + filename_parts[0] + '_direct-' + filename_parts[-1],img_directView)
+    cv2.imwrite(img_path + filename_parts[0] + '_mirror-' + filename_parts[-1],img_rightView)

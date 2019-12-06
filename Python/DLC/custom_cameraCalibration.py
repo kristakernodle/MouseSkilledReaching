@@ -43,78 +43,56 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
-    
-    # update the variable snapshot* in config file according to the name of the cameras
-    try:
-        for i in range(len(cam_names)):
-            cfg_3d[str('config_file_'+cam_names[i])] = cfg_3d.pop(str('config_file_camera-'+str(i+1)))
-        for i in range(len(cam_names)):
-            cfg_3d[str('shuffle_'+cam_names[i])] = cfg_3d.pop(str('shuffle_camera-'+str(i+1)))
-    except:
-        pass
-    
-    project_path = cfg_3d['project_path']
-    projconfigfile=os.path.join(str(project_path),'config.yaml')
-    auxiliaryfunctions.write_config_3d(projconfigfile,cfg_3d)
 
     # Initialize the dictionary 
     img_shape = {}
     objpoints = {} # 3d point in real world space
     imgpoints = {} # 2d points in image plane.
     dist_pickle = {}
-    for cam in cam_names:
-        objpoints.setdefault(cam, [])
-        imgpoints.setdefault(cam, [])
-        dist_pickle.setdefault(cam, [])
-    
+        
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
     
     for fname in images:
-        for cam in cam_names:
-            if cam in fname:
-                filename = Path(fname).stem
-                img = cv2.imread(fname)
-                gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        filename = Path(fname).stem
+        img = cv2.imread(fname)
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-                # Find the chess board corners
-                ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
-                # If found, add object points, image points (after refining them)
-                if ret == True:
-                    img_shape[cam] = gray.shape[::-1]
-                    objpoints[cam].append(objp)
-                    corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-                    imgpoints[cam].append(corners)
-                    # Draw the corners and store the images
-                    img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
-                    cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
-                else:
-                    print("Corners not found for the image %s" %Path(fname).name)
-    try:
-        h,  w = img.shape[:2]
-    except:
-        raise Exception("It seems that the name of calibration images does not match with the camera names in the config file. Please make sure that the calibration images are named with camera names as specified in the config.yaml file.")
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            img_shape = gray.shape[::-1]
+            objpoints.append(objp)
+            imgpoints.append(corners)
+            corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+            # Draw the corners and store the images
+            img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
+            cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
+        else:
+            print("Corners not found for the image %s" %Path(fname).name)
 
-    # Perform calibration for each cameras and store the matrices as a pickle file
+    # Perform calibration for the camera and store the matrix as a pickle file
     if calibrate == True:
-        # Calibrating each camera
-        for cam in cam_names:
-            ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints[cam], imgpoints[cam], img_shape[cam],None,None)
 
+        # Calibrating the camera
+        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_shape,None,None)
+        
+        # Compute mean re-projection error for camera
+        mean_error = 0
+        for i in range(len(objpoints)):
+            imgpoints_proj, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+            error = cv2.norm(imgpoints[i],imgpoints_proj, cv2.NORM_L2)/len(imgpoints_proj)
+            mean_error += error
+        print("Mean re-projection error for your camera: %.3f pixels " %(mean_error/len(objpoints)))
+
+        for cam in cam_names:
             # Save the camera calibration result for later use (we won't use rvecs / tvecs)
-            dist_pickle[cam] = {'mtx':mtx , 'dist':dist, 'objpoints':objpoints[cam] ,'imgpoints':imgpoints[cam] }
+            dist_pickle[cam] = {'mtx':mtx , 'dist':dist, 'objpoints':objpoints,'imgpoints':imgpoints}
             pickle.dump( dist_pickle, open( os.path.join(path_camera_matrix,cam+'_intrinsic_params.pickle'), "wb" ) )
             print('Saving intrinsic camera calibration matrices for %s as a pickle file in %s'%(cam, os.path.join(path_camera_matrix)))
-            
-            # Compute mean re-projection errors for individual cameras
-            mean_error = 0
-            for i in range(len(objpoints[cam])):
-                imgpoints_proj, _ = cv2.projectPoints(objpoints[cam][i], rvecs[i], tvecs[i], mtx, dist)
-                error = cv2.norm(imgpoints[cam][i],imgpoints_proj, cv2.NORM_L2)/len(imgpoints_proj)
-                mean_error += error
-            print("Mean re-projection error for %s images: %.3f pixels " %(cam, mean_error/len(objpoints[cam])))
 
 def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
@@ -175,16 +153,18 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     
     # Get images and camera names
     images = glob.glob(os.path.join(img_path,'*.jpg'))
+
     cam_names = cfg_3d['camera_names']
     
-    # update the variable snapshot* in config file according to the name of the cameras
-    try:
-        for i in range(len(cam_names)):
-            cfg_3d[str('config_file_'+cam_names[i])] = cfg_3d.pop(str('config_file_camera-'+str(i+1)))
-        for i in range(len(cam_names)):
-            cfg_3d[str('shuffle_'+cam_names[i])] = cfg_3d.pop(str('shuffle_camera-'+str(i+1)))
-    except:
-        pass
+    ## It's not clear to me why I want to do this or what this number represents... I need to read further into it
+    # # update the variable snapshot* in config file according to the name of the cameras
+    # try:
+    #     for i in range(len(cam_names)):
+    #         cfg_3d[str('config_file_'+cam_names[i])] = cfg_3d.pop(str('config_file_camera-'+str(i+1)))
+    #     for i in range(len(cam_names)):
+    #         cfg_3d[str('shuffle_'+cam_names[i])] = cfg_3d.pop(str('shuffle_camera-'+str(i+1)))
+    # except:
+    #     pass
     
     project_path = cfg_3d['project_path']
     projconfigfile=os.path.join(str(project_path),'config.yaml')
@@ -209,7 +189,7 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     ## I want to rewrite this section a bit. The idea would be that I can pull the same image for both cameras and just crop it accordingly.
     ## The main output of this function is the checkerboard for each view. 
     ## I want to:
-    ##  1.  loop through image
+    ##  1.  loop through image (achieved)
     ##  2.  Load current image
     ##  3.  create switch/case or if statement for cropping and getting the image of interest
     ##  4.  Starting with the mirror image, try the BGR colors until you get one that works
@@ -217,25 +197,30 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     #### MORE THOUGHTS ABOUT WHAT NEEDS TO HAPPEN I'LL HAVE TO ADD LATER
     for fname in images:
+        filename=Path(fname).stem
+        img = cv2.imread(fname)
         for cam in cam_names:
-            if cam in fname:
-                filename = Path(fname).stem
-                img = cv2.imread(fname)
-                gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            if 'direct' in cam:
+                pass
+            else:
+                pass
+                
+                
+            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-                # Find the chess board corners
-                ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
-                # If found, add object points, image points (after refining them)
-                if ret == True:
-                    img_shape[cam] = gray.shape[::-1]
-                    objpoints[cam].append(objp)
-                    corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-                    imgpoints[cam].append(corners)
-                    # Draw the corners and store the images
-                    img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
-                    cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
-                else:
-                    print("Corners not found for the image %s" %Path(fname).name)
+            # Find the chess board corners
+            ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
+            # If found, add object points, image points (after refining them)
+            if ret == True:
+                img_shape[cam] = gray.shape[::-1]
+                objpoints[cam].append(objp)
+                corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+                imgpoints[cam].append(corners)
+                # Draw the corners and store the images
+                img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
+                cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
+            else:
+                print("Corners not found for the image %s" %Path(fname).name)
     try:
         h,  w = img.shape[:2]
     except:

@@ -15,3 +15,7 @@ def Foldernames3Dproject(cfg_3d, intrinsic=False):
     path_undistort = os.path.join(cfg_3d['project_path'], 'undistortion')
     
     return img_path, path_corners, path_camera_matrix, path_undistort
+
+def readCSV(filename):
+    with open(filename) as f:
+        return f.read().splitlines()    

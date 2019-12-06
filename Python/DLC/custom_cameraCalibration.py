@@ -153,7 +153,6 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
     
     # Get images and camera names
     images = glob.glob(os.path.join(img_path,'*.jpg'))
-
     cam_names = cfg_3d['camera_names']
     
     ## It's not clear to me why I want to do this or what this number represents... I need to read further into it
@@ -183,29 +182,17 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    direct_images = [img for img in images if 'direct' in img]
+    mirror_images = [img for img in images if 'mirror' in img]
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
     
-    ## I want to rewrite this section a bit. The idea would be that I can pull the same image for both cameras and just crop it accordingly.
-    ## The main output of this function is the checkerboard for each view. 
-    ## I want to:
-    ##  1.  loop through image (achieved)
-    ##  2.  Load current image
-    ##  3.  create switch/case or if statement for cropping and getting the image of interest
-    ##  4.  Starting with the mirror image, try the BGR colors until you get one that works
-    ##  5.  Use the same BGR color for the direct view camera
-
-    #### MORE THOUGHTS ABOUT WHAT NEEDS TO HAPPEN I'LL HAVE TO ADD LATER
-    for fname in images:
+    # Start with mirror to figure out which BGR to use for direct
+    for fname in mirror:
+        
         filename=Path(fname).stem
         img = cv2.imread(fname)
-        for cam in cam_names:
-            if 'direct' in cam:
-                pass
-            else:
-                pass
-                
-                
+                 
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
             # Find the chess board corners

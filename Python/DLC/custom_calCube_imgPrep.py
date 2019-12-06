@@ -1,6 +1,7 @@
 import os
 import glob
 import cv2
+from pathlib import Path
 
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC')
 import custom_auxiliaryFunctions as caf
@@ -17,7 +18,7 @@ cropParams_right = caf.readCSV(cropParams_right_csv)
 images = glob.glob(os.path.join(img_path,'*.jpg'))
 
 for image in images:
-    filename = image.split('/')[-1]
+    filename = Path(image).stem()
     date = filename.split('_')[0]
     filename_parts = filename.split('-')
     img = cv2.imread(image)
@@ -48,5 +49,5 @@ for image in images:
         m_y2 = m_y2-1
     img_rightView = img[m_y1:m_y2,m_x1:m_x2,:]
     
-    cv2.imwrite(img_path + filename_parts[0] + '_direct-' + filename_parts[-1],img_directView)
-    cv2.imwrite(img_path + filename_parts[0] + '_mirror-' + filename_parts[-1],img_rightView)
+    cv2.imwrite(img_path + filename_parts[0] + '_direct-' + filename_parts[-1] + '.jpg',img_directView)
+    cv2.imwrite(img_path + filename_parts[0] + '_mirror-' + filename_parts[-1] + '.jpg',img_rightView)

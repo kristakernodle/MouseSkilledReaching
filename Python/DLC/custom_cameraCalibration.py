@@ -182,32 +182,59 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
-    direct_images = [img for img in images if 'direct' in img]
-    mirror_images = [img for img in images if 'mirror' in img]
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
-    
+    direct_images = [img for img in images if 'direct' in img]
+    mirror_images = [img for img in images if 'mirror' in img]
+
     # Start with mirror to figure out which BGR to use for direct
-    for fname in mirror:
+    for fname in mirror_images:
         
         filename=Path(fname).stem
         img = cv2.imread(fname)
-                 
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-            # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
-            # If found, add object points, image points (after refining them)
-            if ret == True:
-                img_shape[cam] = gray.shape[::-1]
-                objpoints[cam].append(objp)
-                corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-                imgpoints[cam].append(corners)
-                # Draw the corners and store the images
-                img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
-                cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
-            else:
-                print("Corners not found for the image %s" %Path(fname).name)
+        # Create a dictionary with all of the different image color conversions for testing
+        img_colorConv = {
+                            "BGR":img,
+                            "HSV":cv2.cvtColor(img,40),
+                            "Gray":cv2.cvtColor(img,6)
+                        }
+
+        ret = False
+        for colorConv in img_colorConv:
+            currImg = img_colorConv[colorConv]
+            size = currImg.shape
+            
+            if len(size) == 2:
+                
+                ret, corners = cv2.findChessboardCorners(currImg, (cbcol,cbrow),None,)
+                if ret == True: break
+
+                currImg_bw = cv2.threshold(currImg,128,255,cv2.THRESH_BINARY)[1]
+                ret, corners = cv2.findChessboardCorners(currImg_bw, (cbcol,cbrow),None,)
+                if ret == True: break
+                else: continue
+            
+            chanIdx = 0
+            while (ret == False) and (chanIdx < size[2]):
+                ret, corners = cv2.findChessboardCorners(currImg[:,:,chanIdx], (cbcol,cbrow),None,)
+                if ret == True: break
+                channel_bw = cv2.threshold(currImg[:,:,chanIdx],128,255,cv2.THRESH_BINARY)[1]
+                ret, corners = cv2.findChessboardCorners(channel_bw, (cbcol,cbrow),None,)
+                chanIdx += 1
+            
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            img_shape[cam] = gray.shape[::-1]
+            objpoints[cam].append(objp)
+            corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+            imgpoints[cam].append(corners)
+            # Draw the corners and store the images
+            img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
+            cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
+        else:
+            print("Corners not found for the image %s" %Path(fname).name)
+    
     try:
         h,  w = img.shape[:2]
     except:

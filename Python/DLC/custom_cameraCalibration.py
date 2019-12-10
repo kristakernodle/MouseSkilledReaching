@@ -94,7 +94,7 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
             pickle.dump( dist_pickle, open( os.path.join(path_camera_matrix,cam+'_intrinsic_params.pickle'), "wb" ) )
             print('Saving intrinsic camera calibration matrices for %s as a pickle file in %s'%(cam, os.path.join(path_camera_matrix)))
 
-def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
+def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4,manualPoints=False):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
     
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images. 
@@ -186,6 +186,12 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
     direct_images = [img for img in images if 'direct' in img]
     mirror_images = [img for img in images if 'mirror' in img]
+
+    if manualPoints:
+        # This is where we read in the manually identified points and check them and stuff
+        csvFiles = glob.glob(os.path.join(img_path,'*.csv'))
+        for fname_csv in csvFiles:
+            allPoints = caf.readCSV(fname_csv)
 
     # Start with mirror to figure out which BGR to use for direct
     for fname in mirror_images:

@@ -200,6 +200,7 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
                             "Gray":cv2.cvtColor(img,6)
                         }
 
+        thresh = 120
         ret = False
         for colorConv in img_colorConv:
             currImg = img_colorConv[colorConv]
@@ -210,7 +211,7 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
                 ret, corners = cv2.findChessboardCorners(currImg, (cbcol,cbrow),None,)
                 if ret == True: break
 
-                currImg_bw = cv2.threshold(currImg,128,255,cv2.THRESH_BINARY)[1]
+                currImg_bw = cv2.threshold(currImg,thresh,255,cv2.THRESH_BINARY)[1]
                 ret, corners = cv2.findChessboardCorners(currImg_bw, (cbcol,cbrow),None,)
                 if ret == True: break
                 else: continue
@@ -219,7 +220,7 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
             while (ret == False) and (chanIdx < size[2]):
                 ret, corners = cv2.findChessboardCorners(currImg[:,:,chanIdx], (cbcol,cbrow),None,)
                 if ret == True: break
-                channel_bw = cv2.threshold(currImg[:,:,chanIdx],128,255,cv2.THRESH_BINARY)[1]
+                channel_bw = cv2.threshold(currImg[:,:,chanIdx],thresh,255,cv2.THRESH_BINARY)[1]
                 ret, corners = cv2.findChessboardCorners(channel_bw, (cbcol,cbrow),None,)
                 chanIdx += 1
             

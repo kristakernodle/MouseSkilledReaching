@@ -83,7 +83,7 @@ def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkill
     if calibrate == True:
 
         # Calibrating the camera
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_shape,None,None)
+        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints[cam], imgpoints[cam], img_shape[cam],None,None)
         
         # Compute mean re-projection error for camera
         mean_error = 0

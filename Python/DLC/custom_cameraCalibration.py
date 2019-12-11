@@ -18,7 +18,7 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
 import custom_auxiliaryFunctions as caf
 
-def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
+def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCNetworks/rightPP/rightPP_Right-Krista-2019-11-18-3d/config.yaml',cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     '''
     Note: The checkerboard I used for getting the intrinsic parameters of the cameras is 9 by 6
     '''
@@ -49,7 +49,12 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     objpoints = {} # 3d point in real world space
     imgpoints = {} # 2d points in image plane.
     dist_pickle = {}
-        
+    
+    for cam in cam_names:
+        objpoints.setdefault(cam, [])
+        imgpoints.setdefault(cam, [])
+        dist_pickle.setdefault(cam, [])
+
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     if len(images)==0:
@@ -64,9 +69,9 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
         ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
         # If found, add object points, image points (after refining them)
         if ret == True:
-            img_shape = gray.shape[::-1]
-            objpoints.append(objp)
-            imgpoints.append(corners)
+            img_shape[cam] = gray.shape[::-1]
+            objpoints[cam].append(objp)
+            imgpoints[cam].append(corners)
             corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
             # Draw the corners and store the images
             img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
@@ -192,7 +197,8 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4,manualP
         csvFiles = glob.glob(os.path.join(img_path,'*.csv'))
         for fname_csv in csvFiles:
             allPoints = caf.readCSV(fname_csv)
-
+            for row in allPoints:
+                continue
     # Start with mirror to figure out which BGR to use for direct
     for fname in mirror_images:
         
@@ -232,12 +238,13 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4,manualP
             
         # If found, add object points, image points (after refining them)
         if ret == True:
-            img_shape[cam] = gray.shape[::-1]
+            currImg = img_colorConv["Gray"]
+            img_shape[cam] = currImg.shape[::-1]
             objpoints[cam].append(objp)
-            corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+            corners = cv2.cornerSubPix(currImg,corners,(11,11),(-1,-1),criteria)
             imgpoints[cam].append(corners)
             # Draw the corners and store the images
-            img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
+            img = cv2.drawChessboardCorners(currImg, (cbcol,cbrow), corners,ret)
             cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
         else:
             print("Corners not found for the image %s" %Path(fname).name)

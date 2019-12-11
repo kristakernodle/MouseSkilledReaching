@@ -33,7 +33,7 @@ def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkill
     
     # Read the config file
     cfg_3d = auxiliaryfunctions.read_config(config)
-    img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,True)
+    img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,intrinsic=True)
     
     # If the paths do not exist, create them
     if not os.path.exists(img_path):
@@ -44,16 +44,11 @@ def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkill
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
 
-    # Initialize the dictionary 
-    img_shape = {}
-    objpoints = {} # 3d point in real world space
-    imgpoints = {} # 2d points in image plane.
+    # Initialize the arrays 
+    img_shape = []
+    objpoints = [] # 3d point in real world space
+    imgpoints = [] # 2d points in image plane.
     dist_pickle = {}
-    
-    for cam in cam_names:
-        objpoints.setdefault(cam, [])
-        imgpoints.setdefault(cam, [])
-        dist_pickle.setdefault(cam, [])
 
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
@@ -69,9 +64,9 @@ def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkill
         ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
         # If found, add object points, image points (after refining them)
         if ret == True:
-            img_shape[cam] = gray.shape[::-1]
-            objpoints[cam].append(objp)
-            imgpoints[cam].append(corners)
+            img_shape = gray.shape[::-1]
+            objpoints.append(objp)
+            imgpoints.append(corners)
             corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
             # Draw the corners and store the images
             img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
@@ -83,7 +78,7 @@ def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkill
     if calibrate == True:
 
         # Calibrating the camera
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints[cam], imgpoints[cam], img_shape[cam],None,None)
+        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_shape,None,None)
         
         # Compute mean re-projection error for camera
         mean_error = 0

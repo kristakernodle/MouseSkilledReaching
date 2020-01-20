@@ -2,7 +2,7 @@
 
 import os
 
-animalDir = '/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/'
+animalDir = '/Volumes/SharedX/Neuro-Leventhal/data/LawrenceLab_Collab/'
 
 # Initialize Variables
 allAnimals=[]
@@ -70,8 +70,8 @@ for animal in allAnimals:
         abMov = []
         groom = []
         
-        skipAbMov = False
-        skipGroom = False
+        skipAbMov = True
+        skipGroom = True
         
         for file in scoreFiles:
             
@@ -91,25 +91,25 @@ for animal in allAnimals:
                     
                     reach.append(int(entry[1]))
                     
-                    if len(entry[2]) > 0 and skipAbMov == False:
-                        abMov.append(int(entry[2]))
-                    else:
-                        
-                        if skipAbMov == False:
-                            needAbMov.append(currDayDir)
-                            
-                        skipAbMov = True
-                        abMov = []
-                        
-                    if len(entry[3]) > 0 and skipGroom == False:
-                        groom.append(int(entry[3]))
-                    else:
-                        
-                        if skipGroom == False:
-                            needGroom.append(currDayDir)
-                        
-                        skipGroom = True
-                        groom = []         
+#                    if len(entry[2]) > 0 and skipAbMov == False:
+#                        abMov.append(int(entry[2]))
+#                    else:
+#                        
+#                        if skipAbMov == False:
+#                            needAbMov.append(currDayDir)
+#                            
+#                        skipAbMov = True
+#                        abMov = []
+#                        
+#                    if len(entry[3]) > 0 and skipGroom == False:
+#                        groom.append(int(entry[3]))
+#                    else:
+#                        
+#                        if skipGroom == False:
+#                            needGroom.append(currDayDir)
+#                        
+#                        skipGroom = True
+#                        groom = []         
             
         if skipDay == True:
             tDayData = [tday,999,999,999,999,999,999,999,999]

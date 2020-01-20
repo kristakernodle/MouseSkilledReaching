@@ -18,7 +18,7 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 os.chdir('/Users/Krista/Documents/GitHub/mouseSkilledReaching/Python/DLC/')
 import custom_auxiliaryFunctions as caf
 
-def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
+def intrinsicParameters(config='/Volumes/SharedX/Neuro-Leventhal/data/mouseSkilledReaching/DLCNetworks/rightPP/rightPP_Right-Krista-2019-11-18-3d/config.yaml',cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     '''
     Note: The checkerboard I used for getting the intrinsic parameters of the cameras is 9 by 6
     '''
@@ -33,7 +33,7 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     
     # Read the config file
     cfg_3d = auxiliaryfunctions.read_config(config)
-    img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,True)
+    img_path,path_corners,path_camera_matrix,path_undistort=caf.Foldernames3Dproject(cfg_3d,intrinsic=True)
     
     # If the paths do not exist, create them
     if not os.path.exists(img_path):
@@ -44,12 +44,12 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
     images = glob.glob(os.path.join(img_path,'*.jpg'))
     cam_names = cfg_3d['camera_names']
 
-    # Initialize the dictionary 
-    img_shape = {}
-    objpoints = {} # 3d point in real world space
-    imgpoints = {} # 2d points in image plane.
+    # Initialize the arrays 
+    img_shape = []
+    objpoints = [] # 3d point in real world space
+    imgpoints = [] # 2d points in image plane.
     dist_pickle = {}
-        
+
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     if len(images)==0:
@@ -94,7 +94,7 @@ def intrinsicParameters(config,cbrow = 9,cbcol = 6,calibrate=False,alpha=0.4):
             pickle.dump( dist_pickle, open( os.path.join(path_camera_matrix,cam+'_intrinsic_params.pickle'), "wb" ) )
             print('Saving intrinsic camera calibration matrices for %s as a pickle file in %s'%(cam, os.path.join(path_camera_matrix)))
 
-def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
+def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4,manualPoints=False):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
     
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images. 
@@ -182,32 +182,68 @@ def calibrateCamera(config,cbrow = 4,cbcol = 3,calibrate=False,alpha=0.4):
 
     # Sort the images.
     images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
-    direct_images = [img for img in images if 'direct' in img]
-    mirror_images = [img for img in images if 'mirror' in img]
     if len(images)==0:
         raise Exception("No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file.")
-    
+    direct_images = [img for img in images if 'direct' in img]
+    mirror_images = [img for img in images if 'mirror' in img]
+
+    if manualPoints:
+        # This is where we read in the manually identified points and check them and stuff
+        csvFiles = glob.glob(os.path.join(img_path,'*.csv'))
+        for fname_csv in csvFiles:
+            allPoints = caf.readCSV(fname_csv)
+            for row in allPoints:
+                continue
     # Start with mirror to figure out which BGR to use for direct
-    for fname in mirror:
+    for fname in mirror_images:
         
         filename=Path(fname).stem
         img = cv2.imread(fname)
-                 
-            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-            # Find the chess board corners
-            ret, corners = cv2.findChessboardCorners(gray, (cbcol,cbrow),None,) #  (8,6) pattern (dimensions = common points of black squares)
-            # If found, add object points, image points (after refining them)
-            if ret == True:
-                img_shape[cam] = gray.shape[::-1]
-                objpoints[cam].append(objp)
-                corners = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-                imgpoints[cam].append(corners)
-                # Draw the corners and store the images
-                img = cv2.drawChessboardCorners(img, (cbcol,cbrow), corners,ret)
-                cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
-            else:
-                print("Corners not found for the image %s" %Path(fname).name)
+        # Create a dictionary with all of the different image color conversions for testing
+        img_colorConv = {
+                            "BGR":img,
+                            "HSV":cv2.cvtColor(img,40),
+                            "Gray":cv2.cvtColor(img,6)
+                        }
+
+        thresh = 120
+        ret = False
+        for colorConv in img_colorConv:
+            currImg = img_colorConv[colorConv]
+            size = currImg.shape
+            
+            if len(size) == 2:
+                
+                ret, corners = cv2.findChessboardCorners(currImg, (cbcol,cbrow),None,)
+                if ret == True: break
+
+                currImg_bw = cv2.threshold(currImg,thresh,255,cv2.THRESH_BINARY)[1]
+                ret, corners = cv2.findChessboardCorners(currImg_bw, (cbcol,cbrow),None,)
+                if ret == True: break
+                else: continue
+            
+            chanIdx = 0
+            while (ret == False) and (chanIdx < size[2]):
+                ret, corners = cv2.findChessboardCorners(currImg[:,:,chanIdx], (cbcol,cbrow),None,)
+                if ret == True: break
+                channel_bw = cv2.threshold(currImg[:,:,chanIdx],thresh,255,cv2.THRESH_BINARY)[1]
+                ret, corners = cv2.findChessboardCorners(channel_bw, (cbcol,cbrow),None,)
+                chanIdx += 1
+            
+        # If found, add object points, image points (after refining them)
+        if ret == True:
+            currImg = img_colorConv["Gray"]
+            img_shape[cam] = currImg.shape[::-1]
+            objpoints[cam].append(objp)
+            corners = cv2.cornerSubPix(currImg,corners,(11,11),(-1,-1),criteria)
+            imgpoints[cam].append(corners)
+            # Draw the corners and store the images
+            img = cv2.drawChessboardCorners(currImg, (cbcol,cbrow), corners,ret)
+            cv2.imwrite(os.path.join(str(path_corners),filename+'_corner.jpg'),img)
+        else:
+            print("Corners not found for the image %s" %Path(fname).name)
+    
     try:
         h,  w = img.shape[:2]
     except:

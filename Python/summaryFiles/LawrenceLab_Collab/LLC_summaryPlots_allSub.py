@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import LLC_animalInfo
 
-animalDir = '/Volumes/SharedX/Neuro-Leventhal/data/LawrenceLab_Collab/'
+animalDir = 'X:/Neuro-Leventhal/data/LawrenceLab_Collab/'
 
 # Initialize Variables
 allAnimals=[]
